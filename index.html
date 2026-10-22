@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Workspace & App Hub</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Inter + Prompt) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-100">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 leading-tight">My App Portal</h1>
+          <p class="text-xs text-slate-500">ศูนย์รวมเว็บแอปพลิเคชันและเครื่องมือทั้งหมด</p>
+        </div>
+      </div>
+
+      <!-- Controls: ค้นหา & ตัวกรอง -->
+      <div class="flex items-center gap-2">
+        <div class="relative w-full sm:w-64">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="ค้นหาชื่อแอป หรือแท็ก..." 
+            class="w-full pl-9 pr-4 py-1.5 text-sm bg-slate-100 border border-transparent rounded-lg focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+          />
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+    
+    <!-- Filter Chips -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 text-sm no-scrollbar" id="categoryContainer">
+      <button onclick="filterCategory('all')" class="cat-btn px-3 py-1.5 rounded-full font-medium transition bg-indigo-600 text-white shadow-sm" data-cat="all">ทั้งหมด</button>
+      <button onclick="filterCategory('favorites')" class="cat-btn px-3 py-1.5 rounded-full font-medium transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200" data-cat="favorites">⭐ ติดดาว</button>
+      <button onclick="filterCategory('clinical')" class="cat-btn px-3 py-1.5 rounded-full font-medium transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200" data-cat="clinical">เครื่องมือคลินิก</button>
+      <button onclick="filterCategory('finance')" class="cat-btn px-3 py-1.5 rounded-full font-medium transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200" data-cat="finance">การเงิน & จัดการ</button>
+      <button onclick="filterCategory('utility')" class="cat-btn px-3 py-1.5 rounded-full font-medium transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200" data-cat="utility">ทั่วไป</button>
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="cardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- แอปจะถูกเรนเดอร์โดย JavaScript -->
+    </div>
+
+    <!-- State: ไม่พบผลลัพธ์ -->
+    <div id="emptyState" class="hidden text-center py-16">
+      <div class="text-4xl mb-3">🔍</div>
+      <p class="text-slate-600 font-medium">ไม่พบ Web App ที่ตรงกับคำค้นหา</p>
+      <p class="text-xs text-slate-400 mt-1">ลองพิมพ์คำอื่น หรือกดดูแอปทั้งหมด</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    Built with HTML, Tailwind CSS & Vanilla JS • Ready for GitHub Pages
+  </footer>
+
+  <!-- Script: ข้อมูลแอปและการทำงาน -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. กำหนดรายชื่อ Web App ของคุณที่นี่
+    // -------------------------------------------------------------
+    // - path: ถ้าอยู่ในโฟลเดอร์เดียวกันให้ใส่ "./ชื่อโฟลเดอร์/index.html"
+    //         ถ้าแยก Repo ให้ใส่เป็นลิงก์ URL เช่น "https://username.github.io/app-name/"
+    // - isExternal: true ถ้าต้องการให้เปิดในแท็บใหม่ (เช่น ลิงก์ไปเว็บอื่น)
+    const APPS_DATA = [
+      {
+        id: "warfarin-tool",
+        title: "Rx-Warfarin adjust ",
+        desc: "คำนวณการปรับขนาดยา warfarin ตาม INR",
+        category: "clinical",
+        badge: "v1.2",
+        icon: "💊",
+        iconBg: "bg-blue-50 text-blue-600",
+        path: "./warfarin/index.html",
+        isExternal: false
+      },
+      {
+        id: "pediatric-tool",
+        title: "Pediatric Dose Helper",
+        desc: "เครื่องมือคำนวณขนาดยาเด็กตามน้ำหนักตัวและอายุ",
+        category: "clinical",
+        badge: "Updated",
+        icon: "👶",
+        iconBg: "bg-emerald-50 text-emerald-600",
+        path: "./ped-dose/index.html",
+        isExternal: false
+      },
+      {
+        id: "expense-tracker",
+        title: "Expense & Finance Hub",
+        desc: "บันทึกรายรับ-รายจ่าย พร้อมสรุปผลและกราฟแนวโน้ม",
+        category: "finance",
+        badge: "Tool",
+        icon: "💳",
+        iconBg: "bg-amber-50 text-amber-600",
+        path: "./expense-tracker/index.html",
+        isExternal: false
+      },
+      {
+        id: "insulin-guide",
+        title: "Insulin Administration Guide",
+        desc: "คู่มือและข้อแนะนำการฉีดยาอินซูลินอย่างปลอดภัย",
+        category: "clinical",
+        badge: "Guide",
+        icon: "💉",
+        iconBg: "bg-purple-50 text-purple-600",
+        path: "./insulin-guide/index.html",
+        isExternal: false
+      }
+    ];
+
+    // LocalStorage สำหรับบันทึกรายการโปรด (Favorites)
+    let favorites = JSON.parse(localStorage.getItem('portal_favs') || '[]');
+    let currentCategory = 'all';
+
+    function toggleFavorite(id, event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+      } else {
+        favorites.push(id);
+      }
+      localStorage.setItem('portal_favs', JSON.stringify(favorites));
+      renderApps();
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.className = "cat-btn px-3 py-1.5 rounded-full font-medium transition bg-indigo-600 text-white shadow-sm";
+        } else {
+          btn.className = "cat-btn px-3 py-1.5 rounded-full font-medium transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200";
+        }
+      });
+      renderApps();
+    }
+
+    function renderApps() {
+      const grid = document.getElementById('cardsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      const filtered = APPS_DATA.filter(app => {
+        const matchesCategory = currentCategory === 'all' 
+          || (currentCategory === 'favorites' && favorites.includes(app.id))
+          || app.category === currentCategory;
+          
+        const matchesSearch = app.title.toLowerCase().includes(keyword) 
+          || app.desc.toLowerCase().includes(keyword)
+          || app.category.toLowerCase().includes(keyword);
+
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.innerHTML = filtered.map(app => {
+        const isFav = favorites.includes(app.id);
+        const targetAttr = app.isExternal ? 'target="_blank" rel="noopener noreferrer"' : '';
+
+        return `
+          <a href="${app.path}" ${targetAttr} class="group bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between relative overflow-hidden">
+            <div>
+              <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl ${app.iconBg} flex items-center justify-center text-2xl group-hover:scale-105 transition-transform">
+                  ${app.icon}
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60">
+                    ${app.badge}
+                  </span>
+                  <button onclick="toggleFavorite('${app.id}', event)" class="text-slate-300 hover:text-amber-400 transition text-lg" title="ติดดาว">
+                    ${isFav ? '⭐' : '☆'}
+                  </button>
+                </div>
+              </div>
+
+              <h2 class="text-base font-semibold text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                ${app.title}
+                <svg class="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </h2>
+              <p class="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+                ${app.desc}
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+              <span class="font-mono text-slate-400">${app.path}</span>
+              <span class="font-medium group-hover:text-indigo-600 transition">เปิดแอป &rarr;</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // Event listener ค้นหาแบบ real-time
+    document.getElementById('searchInput').addEventListener('input', renderApps);
+
+    // Initial render
+    renderApps();
+  </script>
+</body>
+</html>
