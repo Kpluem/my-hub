@@ -122,7 +122,7 @@
         <!-- 3 Patient Input Cards (Grid 3 ช่องพอดีหน้าจอมือถือ) -->
         <div class="grid grid-cols-3 gap-2 w-full lg:w-[480px] shrink-0">
           <!-- น้ำหนัก -->
-          <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-2.5 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-teal-400 transition">
+          <div id="ptWeightCard" class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-2.5 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-teal-400 transition">
             <label for="ptWeight" class="text-[11px] font-bold text-teal-800 leading-tight truncate">⚖️ น้ำหนัก</label>
             <div class="flex items-baseline justify-between mt-0.5">
               <input id="ptWeight" type="number" inputmode="decimal" step="0.1" min="0.5" max="120" value="12"
@@ -172,6 +172,7 @@
         </div>
 
       </div>
+      <div id="patientValidationAlert" role="alert" aria-live="polite" class="hidden mt-2 px-3 py-2 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-xs sm:text-sm font-bold"></div>
     </div>
   </section>
 
@@ -647,7 +648,7 @@
         labelNote: 'รับประทานเฉพาะเวลามีไข้หรือปวด ห่างกันอย่างน้อย 4-6 ชั่วโมง',
         refText: 'Standard dose: 10-15 mg/kg/dose วันละ 4-6 ครั้ง เมื่อมีอาการ',
         regimens: [
-          { id: 'std', label: 'Standard (10-15 mg/kg/dose)', basis: 'per_dose', min: 10, max: 15, freqs: [4, 6], defaultFreq: 4 }
+          { id: 'std', label: 'Standard (10-15 mg/kg/dose)', basis: 'per_dose', min: 10, max: 15, maxDayMg: 4000, freqs: [4, 6], defaultFreq: 4 }
         ]
       },
       {
@@ -658,9 +659,9 @@
         mgPerMl: 0.4,
         bottleMl: 60,
         labelNote: 'ยาขยายหลอดลม บรรเทาอาการไอหอบเหนื่อย',
-        refText: 'DOSE PED: 0.1 mg/kg/day วันละ 4 ครั้ง (หรือ 0.1-0.2 mg/kg/dose วันละ 3-4 ครั้ง)',
+        refText: 'DOSE PED: 0.1 mg/kg/dose ทุก 4–6 ชั่วโมง (วันละ 4–6 ครั้ง) (หรือ 0.1-0.2 mg/kg/dose วันละ 3-4 ครั้ง)',
         regimens: [
-          { id: 'ped_table', label: 'DOSE PED (0.1 mg/kg/day)', basis: 'per_day', min: 0.1, max: 0.1, freqs: [4], defaultFreq: 4 },
+          { id: 'ped_table', label: 'DOSE PED (0.1 mg/kg/dose)', basis: 'per_dose', min: 0.1, max: 0.1, freqs: [4, 6], defaultFreq: 4 },
           { id: 'clinical', label: '0.1-0.2 mg/kg/dose', basis: 'per_dose', min: 0.1, max: 0.2, freqs: [3, 4], defaultFreq: 3 }
         ]
       },
@@ -850,17 +851,34 @@
     // ============================================================================
     // 3. HELPERS & CALCULATIONS
     // ============================================================================
+    function readWeightField(el) {
+      if (!el) return { missing: true, invalid: false, value: NaN };
+      const raw = String(el.value).trim();
+      if (raw === '') return { missing: true, invalid: false, value: NaN };
+      const value = Number(raw);
+      if (!Number.isFinite(value)) return { missing: false, invalid: true, value: NaN };
+      return { missing: false, invalid: false, value };
+    }
+
     function getPatient() {
       const wEl = document.getElementById('ptWeight');
       const yEl = document.getElementById('ptAgeY');
       const mEl = document.getElementById('ptAgeM');
       const dEl = document.getElementById('ptDays');
 
-      const weight = Math.max(0.5, parseFloat(wEl ? wEl.value : 12) || 12);
+      const w = readWeightField(wEl);
+      const errors = [];
+      let weight = NaN;
+      if (w.missing) errors.push('กรุณาระบุน้ำหนัก (kg) ก่อนคำนวณ');
+      else if (w.invalid) errors.push('น้ำหนักต้องเป็นตัวเลข');
+      else if (w.value <= 0) errors.push('น้ำหนักต้องมากกว่า 0 kg');
+      else if (w.value < 0.5 || w.value > 120) errors.push('น้ำหนักอยู่นอกช่วง 0.5–120 kg กรุณาตรวจสอบ');
+      else weight = w.value;
+
       const ageY = Math.max(0, parseInt(yEl ? yEl.value : 2) || 0);
       const ageM = Math.max(0, parseInt(mEl ? mEl.value : 0) || 0);
       const days = Math.max(1, parseInt(dEl ? dEl.value : 5) || 5);
-      return { weight, ageY, ageM, totalMonths: (ageY * 12) + ageM, days };
+      return { weight, ageY, ageM, totalMonths: (ageY * 12) + ageM, days, valid: errors.length === 0, errors };
     }
 
     function getCurrentDrug() {
@@ -975,6 +993,12 @@
         warning = 'เกณฑ์ Tazocin ในตารางระบุสำหรับทารกอายุ > 6 เดือนขึ้นไป';
       }
 
+      // The shared per-dose branch divides the per-dose max by frequency again after applying maxDayMg.
+      // Rebuild only Paracetamol's per-dose max from the capped daily total.
+      if (drug.id === 'paracetamol' && regimen.maxDayMg && freq) {
+        maxDoseMg = maxDayMg / freq;
+      }
+
       return { minDoseMg, maxDoseMg, minDayMg, maxDayMg, warning };
     }
 
@@ -1000,9 +1024,13 @@
       state.rxUnit = 'mg_dose';
 
       const pt = getPatient();
-      const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
-      const midDose = Math.round(((range.minDoseMg + range.maxDoseMg) / 2) * 10) / 10;
-      state.rxValue = String(midDose);
+      if (!pt.valid) {
+        state.rxValue = '';
+      } else {
+        const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
+        const midDose = Math.round(((range.minDoseMg + range.maxDoseMg) / 2) * 10) / 10;
+        state.rxValue = String(midDose);
+      }
 
       updateCategoryTabUI();
       renderDrugList();
@@ -1059,6 +1087,10 @@
       const drug = getCurrentDrug();
       const reg = getCurrentRegimen(drug);
       const pt = getPatient();
+      if (!pt.valid) {
+        updateDynamicPanels();
+        return;
+      }
       const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
 
       let targetMgDose = range.minDoseMg;
@@ -1199,8 +1231,57 @@
       unitSelect.innerHTML = units.map(u => `<option value="${u.val}" ${u.val === state.rxUnit ? 'selected' : ''}>${u.label}</option>`).join('');
     }
 
+    function showInvalidWeight(message) {
+      state.currentLabelText = '';
+      const alert = document.getElementById('patientValidationAlert');
+      if (alert) {
+        alert.textContent = message;
+        alert.classList.remove('hidden');
+      }
+      const card = document.getElementById('ptWeightCard');
+      if (card) card.classList.add('ring-2', 'ring-rose-500');
+      ['rangeMgPerDose', 'rangeMgPerDay', 'rangeMlPerDose'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '—';
+      });
+      ['rangeMgPerDoseSub', 'rangeMgPerDaySub', 'rangeMlPerDoseSub'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '';
+      });
+      const ageAlert = document.getElementById('ageRestrictionAlert');
+      if (ageAlert) ageAlert.classList.add('hidden');
+      const valBox = document.getElementById('rxValidationBox');
+      if (valBox) {
+        valBox.className = 'mt-3 rounded-2xl border-2 border-amber-400 bg-amber-50 flex-1 flex items-center justify-center p-5 text-amber-950 text-sm font-extrabold text-center';
+        valBox.textContent = message;
+      }
+      const step3 = document.getElementById('step3Container');
+      if (step3) {
+        step3.replaceChildren();
+        const note = document.createElement('p');
+        note.className = 'm-auto max-w-md text-sm sm:text-base font-extrabold text-center text-amber-950';
+        note.textContent = 'ยังไม่คำนวณขนาดยาและฉลาก จนกว่าจะระบุน้ำหนักที่ถูกต้อง';
+        step3.appendChild(note);
+      }
+    }
+
+    function clearWeightAlert() {
+      const alert = document.getElementById('patientValidationAlert');
+      if (alert) {
+        alert.textContent = '';
+        alert.classList.add('hidden');
+      }
+      const card = document.getElementById('ptWeightCard');
+      if (card) card.classList.remove('ring-2', 'ring-rose-500');
+    }
+
     function updateDynamicPanels() {
       const pt = getPatient();
+      if (!pt.valid) {
+        showInvalidWeight(pt.errors.join(' '));
+        return;
+      }
+      clearWeightAlert();
       const drug = getCurrentDrug();
       const reg = getCurrentRegimen(drug);
       const freq = state.freqPerDay;
