@@ -255,6 +255,11 @@
                             <label class="block text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-1">Current INR</label>
                             <input type="number" id="currentInr" step="0.1" inputmode="decimal" placeholder="เช่น 3.2" class="w-full bg-transparent font-black text-lg sm:text-xl text-teal-700 placeholder:text-slate-300 placeholder:font-normal focus:outline-none">
                         </div>
+
+                        <label class="col-span-2 flex items-center gap-2.5 bg-white/95 border-2 border-rose-300 rounded-2xl px-3 py-2.5 cursor-pointer shadow-sm">
+                            <input type="checkbox" id="majorBleeding" class="w-4 h-4 accent-rose-600 shrink-0">
+                            <span class="text-[11px] sm:text-xs font-bold text-rose-900 leading-snug">มีเลือดออกรุนแรง (major bleeding)</span>
+                        </label>
                     </div>
                 </div>
 
@@ -448,7 +453,9 @@
             currentRecommendationText: "",
             minTargetTWD: 0,
             maxTargetTWD: 0,
-            dispenseTotals: { d2: 0, d3: 0, d5: 0 }
+            hasDoseRange: true,
+            dispenseTotals: { d2: 0, d3: 0, d5: 0 },
+            dispenseUnsplittableDays: 0
         };
 
         window.onload = () => {
@@ -728,48 +735,147 @@
             }
 
             const rangeBadge = document.getElementById('rangeStatusBadge');
-            const inRange = newTWD >= state.minTargetTWD - 0.01 && newTWD <= state.maxTargetTWD + 0.01;
-            if (inRange) {
-                rangeBadge.innerText = '✓ อยู่ในกรอบแนะนำ';
-                rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-emerald-800 bg-emerald-200/80 border-emerald-300';
+            if (!state.hasDoseRange) {
+                rangeBadge.innerText = 'ไม่มีกรอบ %';
+                rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-slate-700 bg-white border-slate-300';
             } else {
-                rangeBadge.innerText = `แนะนำ: ${state.minTargetTWD.toFixed(1)}-${state.maxTargetTWD.toFixed(1)} mg`;
-                rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-amber-900 bg-amber-200/90 border-amber-300';
+                const inRange = newTWD >= state.minTargetTWD - 0.01 && newTWD <= state.maxTargetTWD + 0.01;
+                if (inRange) {
+                    rangeBadge.innerText = '✓ อยู่ในกรอบแนะนำ';
+                    rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-emerald-800 bg-emerald-200/80 border-emerald-300';
+                } else {
+                    rangeBadge.innerText = `แนะนำ: ${state.minTargetTWD.toFixed(1)}-${state.maxTargetTWD.toFixed(1)} mg`;
+                    rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-amber-900 bg-amber-200/90 border-amber-300';
+                }
             }
+        }
+
+        function validateInrInput(raw) {
+            const text = String(raw ?? '').trim();
+            if (text === '') return { ok: false, message: 'กรุณากรอกค่า INR' };
+            if (!/^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(text)) {
+                return { ok: false, message: 'ค่า INR ต้องเป็นตัวเลข' };
+            }
+            const parsed = parseFloat(text);
+            if (!Number.isFinite(parsed)) return { ok: false, message: 'ค่า INR ต้องเป็นตัวเลข' };
+            if (parsed <= 0) return { ok: false, message: 'ค่า INR ต้องมากกว่า 0' };
+            if (parsed > 20) return { ok: false, message: 'ค่า INR ไม่สมเหตุสมผล (มากกว่า 20)' };
+            return { ok: true, value: Math.round(parsed * 100) / 100 };
+        }
+
+        function hideResultSection() {
+            const rs = document.getElementById('resultSection');
+            rs.classList.add('hidden');
+            rs.classList.remove('flex');
+            state.currentRecommendationText = '';
+        }
+
+        // Band edges are the next row's lower bound, compared with <.
+        // INR is rounded to 2 decimal places first. 1.95 is < 2.0 so it stays
+        // in 1.5–1.9. On target 2.5–3.5, 4.5 is < 4.6 so it stays in 3.6–4.5.
+        function inrBandRecommendation(target, inr) {
+            const low = {
+                banner: "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950",
+                pill: "text-amber-800 border-amber-300",
+                icon: "💡",
+                title: "INR ต่ำกว่าเป้าหมาย"
+            };
+            const ok = {
+                banner: "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-300 text-emerald-950",
+                pill: "text-emerald-800 border-emerald-300",
+                icon: "✅",
+                title: "INR อยู่ในเป้าหมาย"
+            };
+            const high = {
+                banner: "bg-gradient-to-r from-orange-100 to-amber-100 border-orange-300 text-orange-950",
+                pill: "text-orange-800 border-orange-300",
+                icon: "⚠️",
+                title: "INR สูงกว่าเป้าหมาย"
+            };
+            const critical = {
+                banner: "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950",
+                pill: "text-rose-800 border-rose-300",
+                icon: "⚠️",
+                title: "INR สูงกว่าเป้าหมาย"
+            };
+            const omitDoses = {
+                text: "Omit 1–2 doses, decrease 10–20%, Vitamin K1 1 mg orally",
+                minPct: -20,
+                maxPct: -10,
+                hasRange: true
+            };
+            const inrAtLeast9 = {
+                text: "Hold warfarin, Vitamin K1 5–10 mg orally, restart at a lower dose when INR is therapeutic",
+                minPct: 0,
+                maxPct: 0,
+                hasRange: false
+            };
+
+            if (target === "2.0-3.0") {
+                if (inr < 1.5) return { ...low, text: "Increase weekly dose 10–20%", minPct: 10, maxPct: 20, hasRange: true };
+                if (inr < 2.0) return { ...low, text: "Increase dose 5–10%", minPct: 5, maxPct: 10, hasRange: true };
+                if (inr < 3.1) return { ...ok, text: "No change (same dose)", minPct: 0, maxPct: 0, hasRange: true };
+                if (inr < 4.0) return { ...high, text: "Decrease dose 5–10%", minPct: -10, maxPct: -5, hasRange: true };
+                if (inr < 5.0) return { ...critical, text: "Hold 1 day, then decrease 10%", minPct: -10, maxPct: -10, hasRange: true };
+                if (inr < 9.0) return { ...critical, ...omitDoses };
+                return { ...critical, ...inrAtLeast9 };
+            }
+
+            if (inr < 1.5) return { ...low, text: "Increase dose 10–20%", minPct: 10, maxPct: 20, hasRange: true };
+            if (inr < 2.5) return { ...low, text: "Increase dose 5–10%", minPct: 5, maxPct: 10, hasRange: true };
+            if (inr < 3.6) return { ...ok, text: "No change", minPct: 0, maxPct: 0, hasRange: true };
+            if (inr < 4.6) return { ...high, text: "Decrease dose 5–10%, consider holding one dose", minPct: -10, maxPct: -5, hasRange: true };
+            if (inr < 6.1) return { ...critical, text: "Hold 1–2 days, then decrease 5–15%", minPct: -15, maxPct: -5, hasRange: true };
+            if (inr < 9.0) return { ...critical, ...omitDoses };
+            return { ...critical, ...inrAtLeast9 };
+        }
+
+        function bleedingRecommendation() {
+            return {
+                banner: "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950",
+                pill: "text-rose-800 border-rose-300",
+                icon: "⚠️",
+                title: "มีเลือดออกรุนแรง (major bleeding)",
+                text: "Hold warfarin, Vitamin K1 10 mg slow IV plus FFP or PCC, may repeat Vitamin K1 every 12 hours",
+                minPct: 0,
+                maxPct: 0,
+                hasRange: false
+            };
         }
 
         function calculateDose() {
             const target = document.getElementById('targetInr').value;
-            const currentInr = parseFloat(document.getElementById('currentInr').value);
+            const inrCheck = validateInrInput(document.getElementById('currentInr').value);
             const currentTWD = getTWD(state.currentDoses);
+            const majorBleeding = document.getElementById('majorBleeding').checked;
 
-            if (!currentInr || currentTWD === 0) return alert("⚠️ กรุณากรอก Current INR และขนาดยาเดิมให้ครบถ้วนก่อนคำนวณครับ");
-
-            let minPct = 0, maxPct = 0, status = "", bannerStyle = "", pillRuleStyle = "";
-
-            if (target === "2.0-3.0") {
-                if (currentInr < 1.5) { minPct = 10; maxPct = 20; status = "Subtherapeutic (INR ต่ำกว่าเกณฑ์)"; bannerStyle = "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950"; pillRuleStyle="text-amber-800 border-amber-300"; } 
-                else if (currentInr < 2.0) { minPct = 5; maxPct = 10; status = "Subtherapeutic (INR ต่ำเล็กน้อย)"; bannerStyle = "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950"; pillRuleStyle="text-amber-800 border-amber-300"; } 
-                else if (currentInr <= 3.0) { minPct = 0; maxPct = 0; status = "Therapeutic (อยู่ในเกณฑ์เป้าหมาย)"; bannerStyle = "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-300 text-emerald-950"; pillRuleStyle="text-emerald-800 border-emerald-300"; } 
-                else if (currentInr <= 4.0) { minPct = -10; maxPct = -5; status = "Supratherapeutic (INR สูงเล็กน้อย)"; bannerStyle = "bg-gradient-to-r from-orange-100 to-amber-100 border-orange-300 text-orange-950"; pillRuleStyle="text-orange-800 border-orange-300"; } 
-                else { minPct = -20; maxPct = -10; status = "Critical High (พิจารณา Hold ยา)"; bannerStyle = "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950"; pillRuleStyle="text-rose-800 border-rose-300"; }
-            } else {
-                if (currentInr < 2.0) { minPct = 10; maxPct = 20; status = "Subtherapeutic (INR ต่ำกว่าเกณฑ์)"; bannerStyle = "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950"; pillRuleStyle="text-amber-800 border-amber-300"; } 
-                else if (currentInr < 2.5) { minPct = 5; maxPct = 10; status = "Subtherapeutic (INR ต่ำเล็กน้อย)"; bannerStyle = "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950"; pillRuleStyle="text-amber-800 border-amber-300"; } 
-                else if (currentInr <= 3.5) { minPct = 0; maxPct = 0; status = "Therapeutic (อยู่ในเกณฑ์เป้าหมาย)"; bannerStyle = "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-300 text-emerald-950"; pillRuleStyle="text-emerald-800 border-emerald-300"; } 
-                else if (currentInr <= 4.5) { minPct = -10; maxPct = -5; status = "Supratherapeutic (INR สูงเล็กน้อย)"; bannerStyle = "bg-gradient-to-r from-orange-100 to-amber-100 border-orange-300 text-orange-950"; pillRuleStyle="text-orange-800 border-orange-300"; } 
-                else { minPct = -20; maxPct = -10; status = "Critical High (พิจารณา Hold ยา)"; bannerStyle = "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950"; pillRuleStyle="text-rose-800 border-rose-300"; }
+            if (!inrCheck.ok) {
+                hideResultSection();
+                return alert('⚠️ ' + inrCheck.message);
+            }
+            if (currentTWD === 0) {
+                hideResultSection();
+                return alert("⚠️ กรุณากรอก Current INR และขนาดยาเดิมให้ครบถ้วนก่อนคำนวณครับ");
             }
 
-            let minT = currentTWD * (1 + minPct / 100);
-            let maxT = currentTWD * (1 + maxPct / 100);
-            if (minT > maxT) { let tmp = minT; minT = maxT; maxT = tmp; }
+            const currentInr = inrCheck.value;
+            const rec = majorBleeding ? bleedingRecommendation() : inrBandRecommendation(target, currentInr);
 
-            state.minTargetTWD = minT;
-            state.maxTargetTWD = maxT;
+            state.hasDoseRange = rec.hasRange;
+            if (rec.hasRange) {
+                let minT = currentTWD * (1 + rec.minPct / 100);
+                let maxT = currentTWD * (1 + rec.maxPct / 100);
+                if (minT > maxT) { const tmp = minT; minT = maxT; maxT = tmp; }
+                state.minTargetTWD = minT;
+                state.maxTargetTWD = maxT;
+            } else {
+                state.minTargetTWD = currentTWD;
+                state.maxTargetTWD = currentTWD;
+            }
 
             state.newDoses = [...state.currentDoses];
             state.newBasePill = state.currentBasePill;
+            state.currentRecommendationText = rec.text;
 
             const rs = document.getElementById('resultSection');
             rs.classList.remove('hidden');
@@ -777,47 +883,105 @@
             setTimeout(() => rs.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 
             const alertBox = document.getElementById('alertBox');
-            alertBox.className = `rounded-2xl p-3.5 sm:p-5 border-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm smooth ${bannerStyle}`;
-            document.getElementById('alertTitle').innerText = status;
-            
-            let recText = minPct === 0 
-                ? "Maintain current dose" 
-                : `${minPct > 0 ? 'Increase' : 'Decrease'} dose by ${Math.abs(minPct)}% - ${Math.abs(maxPct)}%`;
-            state.currentRecommendationText = recText; 
-            
-            document.getElementById('alertDesc').innerText = "แนะนำ: " + recText;
-            document.getElementById('pctRule').innerText = `กรอบยาแนะนำ: ${minT.toFixed(1)} - ${maxT.toFixed(1)} mg/wk`;
-            document.getElementById('pctRule').className = `w-full sm:w-auto text-center text-xs font-bold px-3.5 py-1.5 sm:py-2 rounded-xl bg-white shadow-sm border-2 ${pillRuleStyle}`;
-            document.getElementById('alertIcon').innerText = currentInr > 4.0 ? "⚠️" : (minPct === 0 ? "✅" : "💡");
-            
+            alertBox.className = `rounded-2xl p-3.5 sm:p-5 border-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm smooth ${rec.banner}`;
+            document.getElementById('alertTitle').innerText = rec.title;
+            document.getElementById('alertDesc').innerText = "แนะนำ: " + rec.text;
+
+            const pctRule = document.getElementById('pctRule');
+            pctRule.innerText = rec.hasRange
+                ? `กรอบยาแนะนำ: ${state.minTargetTWD.toFixed(1)} - ${state.maxTargetTWD.toFixed(1)} mg/wk`
+                : 'ไม่มีกรอบปรับ %';
+            pctRule.className = `w-full sm:w-auto text-center text-xs font-bold px-3.5 py-1.5 sm:py-2 rounded-xl bg-white shadow-sm border-2 ${rec.pill}`;
+            document.getElementById('alertIcon').innerText = rec.icon;
+
             refreshNewRegimenUI();
         }
 
-        function getPillBreakdown(dose, preferredPill = null) {
-            let d2 = 0, d3 = 0, d5 = 0;
-            if (dose <= 0) return { d2, d3, d5 };
+        function nearlyDivides(value, step) {
+            const q = value / step;
+            return Math.abs(q - Math.round(q)) < 0.001;
+        }
 
-            if (preferredPill === 2 && Math.abs(dose % 1.0) < 0.001) return { d2: dose / 2, d3: 0, d5: 0 };
-            if (preferredPill === 3 && Math.abs(dose % 1.5) < 0.001) return { d2: 0, d3: dose / 3, d5: 0 };
-            if (preferredPill === 5 && Math.abs(dose % 2.5) < 0.001) return { d2: 0, d3: 0, d5: dose / 5 };
+        function isHalfTabletCount(n) {
+            return n >= -1e-9 && Math.abs(n * 2 - Math.round(n * 2)) < 1e-6;
+        }
 
-            switch(dose) {
-                case 1.0: d2 = 0.5; break; case 1.5: d3 = 0.5; break;
-                case 2.0: d2 = 1; break;   case 2.5: d5 = 0.5; break;
-                case 3.0: d3 = 1; break;   case 3.5: d2 = 1; d3 = 0.5; break;
-                case 4.0: d2 = 2; break;   case 4.5: d3 = 1.5; break;
-                case 5.0: d5 = 1; break;   case 5.5: d3 = 1; d5 = 0.5; break;
-                case 6.0: d3 = 2; break;   case 6.5: d5 = 1; d3 = 0.5; break;
-                case 7.0: d2 = 1; d5 = 1; break; case 7.5: d5 = 1.5; break;
-                case 8.0: d3 = 1; d5 = 1; break; case 9.0: d3 = 3; break;
-                case 10.0: d5 = 2; break;
-                default:
-                    if (Math.abs(dose % 1.5) < 0.001) d3 = dose / 3;
-                    else if (Math.abs(dose % 2.5) < 0.001) d5 = dose / 5;
-                    else d2 = dose / 2;
-                    break;
+        function solveHalfTabletBreakdown(dose) {
+            const doubled = dose * 2;
+            const units = Math.round(doubled);
+            if (Math.abs(doubled - units) > 0.01 || units <= 1) return null;
+
+            let best = null;
+            for (let halves5 = 0; halves5 <= Math.floor(units / 5); halves5++) {
+                const after5 = units - 5 * halves5;
+                for (let halves3 = 0; halves3 <= Math.floor(after5 / 3); halves3++) {
+                    const rem = after5 - 3 * halves3;
+                    if (rem < 0 || rem % 2 !== 0) continue;
+                    const halves2 = rem / 2;
+                    const d2 = halves2 / 2;
+                    const d3 = halves3 / 2;
+                    const d5 = halves5 / 2;
+                    const tablets = d2 + d3 + d5;
+                    const strengths = (d2 > 0 ? 1 : 0) + (d3 > 0 ? 1 : 0) + (d5 > 0 ? 1 : 0);
+                    const score = tablets * 10 + strengths;
+                    if (!best || score < best.score) best = { d2, d3, d5, score };
+                }
             }
-            return { d2, d3, d5 };
+            return best ? { d2: best.d2, d3: best.d3, d5: best.d5 } : null;
+        }
+
+        function getPillBreakdown(dose, preferredPill = null) {
+            if (!(dose > 0)) return { d2: 0, d3: 0, d5: 0, impossible: false };
+
+            let d2 = 0, d3 = 0, d5 = 0;
+            const doseR = Math.round(dose * 1000) / 1000;
+
+            if (preferredPill === 2 && nearlyDivides(doseR, 1)) d2 = doseR / 2;
+            else if (preferredPill === 3 && nearlyDivides(doseR, 1.5)) d3 = doseR / 3;
+            else if (preferredPill === 5 && nearlyDivides(doseR, 2.5)) d5 = doseR / 5;
+            else {
+                const keyed = Math.round(doseR * 10) / 10;
+                let matched = Math.abs(doseR - keyed) < 0.001;
+                if (matched) {
+                    switch (keyed) {
+                        case 1: d2 = 0.5; break;
+                        case 1.5: d3 = 0.5; break;
+                        case 2: d2 = 1; break;
+                        case 2.5: d5 = 0.5; break;
+                        case 3: d3 = 1; break;
+                        case 3.5: d2 = 1; d3 = 0.5; break;
+                        case 4: d2 = 2; break;
+                        case 4.5: d3 = 1.5; break;
+                        case 5: d5 = 1; break;
+                        case 5.5: d3 = 1; d5 = 0.5; break;
+                        case 6: d3 = 2; break;
+                        case 6.5: d5 = 1; d3 = 0.5; break;
+                        case 7: d2 = 1; d5 = 1; break;
+                        case 7.5: d5 = 1.5; break;
+                        case 8: d3 = 1; d5 = 1; break;
+                        case 9: d3 = 3; break;
+                        case 10: d5 = 2; break;
+                        default: matched = false; break;
+                    }
+                }
+                if (!matched) {
+                    if (nearlyDivides(doseR, 1.5)) d3 = doseR / 3;
+                    else if (nearlyDivides(doseR, 2.5)) d5 = doseR / 5;
+                    else if (nearlyDivides(doseR, 1)) d2 = doseR / 2;
+                    else {
+                        const solved = solveHalfTabletBreakdown(doseR);
+                        if (!solved) return { d2: 0, d3: 0, d5: 0, impossible: true };
+                        d2 = solved.d2;
+                        d3 = solved.d3;
+                        d5 = solved.d5;
+                    }
+                }
+            }
+
+            if (!isHalfTabletCount(d2) || !isHalfTabletCount(d3) || !isHalfTabletCount(d5) || (d2 === 0 && d3 === 0 && d5 === 0)) {
+                return { d2: 0, d3: 0, d5: 0, impossible: true };
+            }
+            return { d2, d3, d5, impossible: false };
         }
 
         function getPillInfo(dose, preferredPill = null) {
@@ -825,6 +989,14 @@
                 return { strengthKey: 'hold', fullText: 'หยุดยา', shortText: 'หยุดยา' };
             }
             const bk = getPillBreakdown(dose, preferredPill);
+            if (bk.impossible) {
+                const shown = Math.round(dose * 10) / 10;
+                return {
+                    strengthKey: 'invalid',
+                    fullText: `แบ่งเม็ดไม่ได้ (${shown} mg)`,
+                    shortText: `แบ่งเม็ดไม่ได้ (${shown} mg)`
+                };
+            }
             let strengths = [];
             let fullParts = [];
             let shortParts = [];
@@ -904,6 +1076,7 @@
         function getPillUI(dose, preferredPill = null) {
             const bk = getPillBreakdown(dose, preferredPill);
             if (dose === 0) return '<div class="h-3.5 flex items-center"><span class="text-[8px] font-bold text-rose-600 bg-rose-100 px-1 rounded">Hold</span></div>';
+            if (bk.impossible) return '<div class="min-h-[14px] flex items-center justify-center"><span class="text-[7px] sm:text-[8px] leading-tight font-bold text-rose-700 bg-rose-100 px-1 py-0.5 rounded text-center">⚠ แบ่งไม่ได้</span></div>';
             if (bk.d2 === 0 && bk.d3 === 0 && bk.d5 === 0) return '<div class="text-[8px] text-slate-400 font-bold">Custom</div>';
 
             const pills = { 
@@ -928,10 +1101,14 @@
             const days = parseInt(document.getElementById('followUpDays').value) || 0;
             const activeSchedule = state.newDoses;
             
-            let totalD2 = 0, totalD3 = 0, totalD5 = 0;
+            let totalD2 = 0, totalD3 = 0, totalD5 = 0, unsplittableDays = 0;
             for(let i = 0; i < days; i++) {
-                const dose = activeSchedule[i % 7]; 
+                const dose = activeSchedule[i % 7];
                 const bk = getPillBreakdown(dose, state.newBasePill);
+                if (dose > 0 && (bk.impossible || !isHalfTabletCount(bk.d2) || !isHalfTabletCount(bk.d3) || !isHalfTabletCount(bk.d5))) {
+                    unsplittableDays++;
+                    continue;
+                }
                 totalD2 += bk.d2; totalD3 += bk.d3; totalD5 += bk.d5;
             }
 
@@ -940,6 +1117,7 @@
             const ceilD5 = Math.ceil(totalD5);
 
             state.dispenseTotals = { d2: ceilD2, d3: ceilD3, d5: ceilD5 };
+            state.dispenseUnsplittableDays = unsplittableDays;
 
             document.getElementById('dispenseD2').innerText = ceilD2;
             document.getElementById('dispenseD3').innerText = ceilD3;
@@ -952,8 +1130,14 @@
             if (d2 > 0) parts.push(`2 mg = ${d2} เม็ด`);
             if (d3 > 0) parts.push(`3 mg = ${d3} เม็ด`);
             if (d5 > 0) parts.push(`5 mg = ${d5} เม็ด`);
-            if (parts.length === 0) return "0 เม็ด (Hold ยา)";
-            return parts.join(' | ');
+            const skipped = state.dispenseUnsplittableDays || 0;
+            if (parts.length === 0) {
+                if (skipped > 0) return `แบ่งเม็ดไม่ได้ ${skipped} วัน (ไม่นับเป็นจำนวนเม็ด)`;
+                return "0 เม็ด (Hold ยา)";
+            }
+            let text = parts.join(' | ');
+            if (skipped > 0) text += ` | แบ่งเม็ดไม่ได้ ${skipped} วัน (ไม่นับในยอด)`;
+            return text;
         }
 
         function generateNote() {
