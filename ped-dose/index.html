@@ -1071,7 +1071,7 @@
       } else if (regimen.basis === 'age_fixed_guaifenesin') {
         const yrs = pt.totalMonths / 12;
         if (yrs < 2) {
-          contraindicated = true;
+          minDoseMg = 25; maxDoseMg = 50;
           warning = 'เด็กอายุต่ำกว่า 2 ปี: ตาราง DOSE PED ระบุขนาดยาตั้งแต่ 2 ปีขึ้นไป';
         } else if (yrs < 6) {
           minDoseMg = 50; maxDoseMg = 100;
@@ -1080,10 +1080,8 @@
         } else {
           minDoseMg = 200; maxDoseMg = 400;
         }
-        if (!contraindicated) {
-          minDayMg = minDoseMg * freq;
-          maxDayMg = maxDoseMg * freq;
-        }
+        minDayMg = minDoseMg * freq;
+        maxDayMg = maxDoseMg * freq;
       } else if (regimen.basis === 'oseltamivir_rule') {
         if (pt.totalMonths < 3) { minDoseMg = 12; maxDoseMg = 12; }
         else if (pt.totalMonths <= 5) { minDoseMg = 20; maxDoseMg = 20; }
@@ -1100,18 +1098,9 @@
 
       if (drug.id === 'cotrimoxazole' && pt.totalMonths < 2) {
         warning = 'Co-trimoxazole แนะนำในทารกอายุมากกว่า 2 เดือนขึ้นไป';
-        contraindicated = true;
       }
       if (drug.id === 'tazocin_iv' && pt.totalMonths <= 6) {
         warning = 'เกณฑ์ Tazocin ในตารางระบุสำหรับทารกอายุ > 6 เดือนขึ้นไป';
-        contraindicated = true;
-      }
-      if (contraindicated) {
-        minDoseMg = 0;
-        maxDoseMg = 0;
-        minDayMg = 0;
-        maxDayMg = 0;
-        capLimits.length = 0;
       }
 
       const capNote = capLimits.length
