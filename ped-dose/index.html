@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>DOSE PED — Pediatric Dose & Compounding</title>
 
   <!-- PWA & FULLSCREEN META TAGS -->
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Row 2 on Mobile: 3 Equal-Width Category Tabs (สมดุลเต็มจอพอดี) -->
-        <div class="grid grid-cols-3 lg: inline-grid p-1 rounded-xl bg-slate-100 border border-slate-200 gap-1 w-full lg:w-auto">
+        <div class="grid grid-cols-3 lg:inline-grid p-1 rounded-xl bg-slate-100 border border-slate-200 gap-1 w-full lg:w-auto">
           <button type="button" id="tab-liquid" onclick="switchCategory('liquid')"
             class="px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1">
             <span>🧴</span><span>ยาน้ำ <span class="hidden sm:inline">(12)</span></span>
@@ -109,6 +109,10 @@
         </div>
 
       </div>
+      <p id="medicalDisclaimer" class="mt-2 text-[11px] sm:text-xs leading-snug text-amber-950 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+        <span class="font-extrabold">ข้อควรระวัง:</span>
+        เครื่องมือช่วยคำนวณเท่านั้น ไม่ใช่คำตัดสินทางคลินิก ต้องตรวจสอบขนาดยากับเกณฑ์อ้างอิงหรือโปรโตคอลของสถาบันก่อนใช้
+      </p>
     </div>
   </header>
 
@@ -122,7 +126,7 @@
         <!-- 3 Patient Input Cards (Grid 3 ช่องพอดีหน้าจอมือถือ) -->
         <div class="grid grid-cols-3 gap-2 w-full lg:w-[480px] shrink-0">
           <!-- น้ำหนัก -->
-          <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-2.5 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-teal-400 transition">
+          <div id="ptWeightCard" class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-2.5 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-teal-400 transition">
             <label for="ptWeight" class="text-[11px] font-bold text-teal-800 leading-tight truncate">⚖️ น้ำหนัก</label>
             <div class="flex items-baseline justify-between mt-0.5">
               <input id="ptWeight" type="number" inputmode="decimal" step="0.1" min="0.5" max="120" value="12"
@@ -133,7 +137,7 @@
           </div>
 
           <!-- อายุ -->
-          <div class="bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-xl px-2 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-sky-400 transition">
+          <div id="ptAgeCard" class="bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-xl px-2 sm:px-3 py-1.5 flex flex-col justify-center focus-within:ring-2 focus-within:ring-sky-400 transition">
             <label class="text-[11px] font-bold text-sky-800 leading-tight truncate">👶 อายุ (ปี/ด.)</label>
             <div class="flex items-baseline justify-between gap-0.5 mt-0.5">
               <input id="ptAgeY" type="number" inputmode="numeric" step="1" min="0" max="18" value="2"
@@ -172,6 +176,7 @@
         </div>
 
       </div>
+      <div id="patientValidationAlert" role="alert" aria-live="polite" class="hidden mt-2 px-3 py-2 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-xs sm:text-sm font-bold"></div>
     </div>
   </section>
 
@@ -235,6 +240,8 @@
 
           <!-- Warning if any -->
           <div id="ageRestrictionAlert" class="hidden mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-semibold"></div>
+          <div id="capAppliedNote" class="hidden mt-3 px-3 py-2 rounded-xl bg-sky-50 border border-sky-300 text-sky-950 text-xs sm:text-sm font-bold"></div>
+          <div id="missingMaxNote" class="hidden mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs sm:text-sm font-bold"></div>
 
           <!-- STEP 1: Recommended Dose Range -->
           <div class="mt-3">
@@ -556,6 +563,7 @@
         labelNote: 'บรรเทาอาการแพ้ ลดน้ำมูก • ยานี้อาจทำให้ง่วงซึม',
         refText: 'Standard dose: 0.35 mg/kg/dose วันละ 3-4 ครั้ง',
         regimens: [
+          // TODO(owner): ยังไม่มี maxDoseMg และ maxDayMg — ใส่เพดานจากเกณฑ์อ้างอิงของสถาบัน (ขนาดตาม kg จะไม่ถูกจำกัดจนกว่าจะเติม)
           { id: 'std', label: 'Standard (0.35 mg/kg/dose)', basis: 'per_dose', min: 0.35, max: 0.35, freqs: [3, 4], defaultFreq: 3 }
         ]
       },
@@ -645,9 +653,10 @@
         mgPerMl: 24,
         bottleMl: 60,
         labelNote: 'รับประทานเฉพาะเวลามีไข้หรือปวด ห่างกันอย่างน้อย 4-6 ชั่วโมง',
-        refText: 'Standard dose: 10-15 mg/kg/dose วันละ 4-6 ครั้ง เมื่อมีอาการ',
+        refText: 'Standard dose: 10-15 mg/kg/dose วันละ 4-6 ครั้ง เมื่อมีอาการ (max 4,000 mg/day)',
         regimens: [
-          { id: 'std', label: 'Standard (10-15 mg/kg/dose)', basis: 'per_dose', min: 10, max: 15, freqs: [4, 6], defaultFreq: 4 }
+          // เพดานต่อวันที่เจ้าของโปรแกรมกำหนด (4,000 mg/วัน) — ไม่ได้กำหนด max ต่อครั้ง
+          { id: 'std', label: 'Standard (10-15 mg/kg/dose)', basis: 'per_dose', min: 10, max: 15, maxDayMg: 4000, freqs: [4, 6], defaultFreq: 4 }
         ]
       },
       {
@@ -658,9 +667,14 @@
         mgPerMl: 0.4,
         bottleMl: 60,
         labelNote: 'ยาขยายหลอดลม บรรเทาอาการไอหอบเหนื่อย',
-        refText: 'DOSE PED: 0.1 mg/kg/day วันละ 4 ครั้ง (หรือ 0.1-0.2 mg/kg/dose วันละ 3-4 ครั้ง)',
+        refText: '0.1 mg/kg/dose ทุก 4–6 ชั่วโมง (วันละ 4–6 ครั้ง) • ทางเลือก: 0.1-0.2 mg/kg/dose วันละ 3-4 ครั้ง',
         regimens: [
-          { id: 'ped_table', label: 'DOSE PED (0.1 mg/kg/day)', basis: 'per_day', min: 0.1, max: 0.1, freqs: [4], defaultFreq: 4 },
+          // เจ้าของโปรแกรมยืนยันว่าหน่วยเดิมผิด: ค่าที่ถูกคือ 0.1 mg/kg/ครั้ง ไม่ใช่ต่อวัน
+          // ความถี่ทุก 4–6 ชม. ใช้แบบเดียวกับสูตร q4–6h อื่นในแอป คือวันละ 4 หรือ 6 ครั้ง
+          // TODO(owner): ยังไม่มี maxDoseMg และ maxDayMg — ใส่เพดานจากเกณฑ์อ้างอิงของสถาบัน (ขนาดตาม kg จะไม่ถูกจำกัดจนกว่าจะเติม)
+          { id: 'ped_table', label: 'DOSE PED (0.1 mg/kg/dose)', basis: 'per_dose', min: 0.1, max: 0.1, freqs: [4, 6], defaultFreq: 4 },
+          // สูตรทางเลือกนี้ไม่ได้แก้ตัวเลข: 0.1–0.2 mg/kg/dose วันละ 3–4 ครั้ง
+          // TODO(owner): ยังไม่มี maxDoseMg และ maxDayMg — ใส่เพดานจากเกณฑ์อ้างอิงของสถาบัน (ขนาดตาม kg จะไม่ถูกจำกัดจนกว่าจะเติม)
           { id: 'clinical', label: '0.1-0.2 mg/kg/dose', basis: 'per_dose', min: 0.1, max: 0.2, freqs: [3, 4], defaultFreq: 3 }
         ]
       },
@@ -756,7 +770,9 @@
         vehicleNote: 'บดเม็ดยาให้ละเอียด ผสมน้ำเชื่อมปรับปริมาตรตามกำหนด',
         refText: 'Day 1: 70 mg/kg/day แบ่งให้วันละ 2 ครั้ง • Day 2-5: 30 mg/kg/day แบ่งให้วันละ 2 ครั้ง',
         regimens: [
+          // TODO(owner): ยังไม่มี maxDoseMg และ maxDayMg — ใส่เพดานจากเกณฑ์อ้างอิงของสถาบัน (ขนาดตาม kg จะไม่ถูกจำกัดจนกว่าจะเติม)
           { id: 'day1', label: 'Day 1 (70 mg/kg/day)', basis: 'per_day', min: 70, max: 70, freqs: [2], defaultFreq: 2 },
+          // TODO(owner): ยังไม่มี maxDoseMg และ maxDayMg — ใส่เพดานจากเกณฑ์อ้างอิงของสถาบัน (ขนาดตาม kg จะไม่ถูกจำกัดจนกว่าจะเติม)
           { id: 'day2_5', label: 'Day 2-5 (30 mg/kg/day)', basis: 'per_day', min: 30, max: 30, freqs: [2], defaultFreq: 2 }
         ]
       },
@@ -850,17 +866,103 @@
     // ============================================================================
     // 3. HELPERS & CALCULATIONS
     // ============================================================================
+    // ขอบเขตนี้ตรงกับ min/max ที่ช่องกรอกมีอยู่แล้ว ไม่ใช่เกณฑ์ขนาดยาใหม่
+    const WEIGHT_MIN_KG = 0.5;
+    const WEIGHT_MAX_KG = 120;
+    const AGE_YEAR_MAX = 18;
+
+    function readPatientField(el) {
+      if (!el) return { missing: true, invalid: false, value: NaN };
+      const raw = String(el.value).trim();
+      if (raw === '') return { missing: true, invalid: false, value: NaN };
+      const value = Number(raw);
+      if (!Number.isFinite(value)) return { missing: false, invalid: true, value: NaN };
+      return { missing: false, invalid: false, value };
+    }
+
+    function regimenNeedsAge(drug, regimen) {
+      if (!regimen) return false;
+      if (regimen.basis === 'age_fixed_guaifenesin' || regimen.basis === 'oseltamivir_rule') return true;
+      if (drug && (drug.id === 'cotrimoxazole' || drug.id === 'tazocin_iv')) return true;
+      return false;
+    }
+
+    function regimenMissingMax(regimen) {
+      if (!regimen || (regimen.basis !== 'per_day' && regimen.basis !== 'per_dose')) return false;
+      const hasDoseMax = typeof regimen.maxDoseMg === 'number' && regimen.maxDoseMg > 0;
+      const hasDayMax = typeof regimen.maxDayMg === 'number' && regimen.maxDayMg > 0;
+      return !hasDoseMax && !hasDayMax;
+    }
+
     function getPatient() {
       const wEl = document.getElementById('ptWeight');
       const yEl = document.getElementById('ptAgeY');
       const mEl = document.getElementById('ptAgeM');
       const dEl = document.getElementById('ptDays');
+      const drug = getCurrentDrug();
+      const regimen = getCurrentRegimen(drug);
+      const errors = [];
+      let weightError = false;
+      let ageError = false;
 
-      const weight = Math.max(0.5, parseFloat(wEl ? wEl.value : 12) || 12);
-      const ageY = Math.max(0, parseInt(yEl ? yEl.value : 2) || 0);
-      const ageM = Math.max(0, parseInt(mEl ? mEl.value : 0) || 0);
-      const days = Math.max(1, parseInt(dEl ? dEl.value : 5) || 5);
-      return { weight, ageY, ageM, totalMonths: (ageY * 12) + ageM, days };
+      const w = readPatientField(wEl);
+      let weight = NaN;
+      if (w.missing) {
+        weightError = true;
+        errors.push('กรุณาระบุน้ำหนัก (kg) ก่อนคำนวณ');
+      } else if (w.invalid) {
+        weightError = true;
+        errors.push('น้ำหนักต้องเป็นตัวเลข');
+      } else if (w.value <= 0) {
+        weightError = true;
+        errors.push('น้ำหนักต้องมากกว่า 0 kg');
+      } else if (w.value < WEIGHT_MIN_KG || w.value > WEIGHT_MAX_KG) {
+        weightError = true;
+        errors.push('น้ำหนักอยู่นอกช่วง 0.5–120 kg กรุณาตรวจสอบ');
+      } else {
+        weight = w.value;
+      }
+
+      const y = readPatientField(yEl);
+      const m = readPatientField(mEl);
+      let ageY = 0;
+      let ageM = 0;
+      const ageRequired = regimenNeedsAge(drug, regimen);
+      if (y.invalid || m.invalid) {
+        ageError = true;
+        errors.push('อายุต้องเป็นตัวเลข');
+      } else if ((!y.missing && y.value < 0) || (!m.missing && m.value < 0)) {
+        ageError = true;
+        errors.push('อายุต้องไม่ติดลบ');
+      } else if ((!y.missing && !Number.isInteger(y.value)) || (!m.missing && !Number.isInteger(m.value))) {
+        ageError = true;
+        errors.push('ปีและเดือนต้องเป็นจำนวนเต็ม');
+      } else if (!y.missing && y.value > AGE_YEAR_MAX) {
+        ageError = true;
+        errors.push('อายุเกิน 18 ปี อยู่นอกช่วงของเครื่องมือนี้');
+      } else if (!m.missing && m.value > 11) {
+        ageError = true;
+        errors.push('เดือนต้องอยู่ระหว่าง 0 ถึง 11');
+      } else if (ageRequired && y.missing && m.missing) {
+        ageError = true;
+        errors.push('ยานี้ใช้เกณฑ์ตามอายุ กรุณาระบุอายุ (ปี/เดือน)');
+      } else {
+        ageY = y.missing ? 0 : y.value;
+        ageM = m.missing ? 0 : m.value;
+      }
+
+      const days = Math.max(1, parseInt(dEl ? dEl.value : 5, 10) || 5);
+      return {
+        weight,
+        ageY,
+        ageM,
+        totalMonths: (ageY * 12) + ageM,
+        days,
+        valid: errors.length === 0,
+        errors,
+        weightError,
+        ageError
+      };
     }
 
     function getCurrentDrug() {
@@ -897,53 +999,79 @@
       }
     }
 
+    function noteIfCapped(beforeMin, beforeMax, afterMin, afterMax, label, capLimits) {
+      if (beforeMin - afterMin > 1e-6 || beforeMax - afterMax > 1e-6) capLimits.push(label);
+    }
+
     function calculateRecommendedRange(drug, regimen, pt, freq) {
       let minDoseMg = 0, maxDoseMg = 0, minDayMg = 0, maxDayMg = 0;
       let warning = '';
+      let contraindicated = false;
+      const capLimits = [];
 
+      if (!pt || !Number.isFinite(pt.weight) || pt.weight <= 0 || !freq) {
+        return { minDoseMg: 0, maxDoseMg: 0, minDayMg: 0, maxDayMg: 0, warning: '', contraindicated: false, capNote: '' };
+      }
+
+      // เพดานใช้เฉพาะเมื่อสูตรนั้นกำหนด maxDoseMg / maxDayMg ไว้ ถ้าไม่มีจะไม่สมมติตัวเลขเอง
       if (regimen.basis === 'per_day') {
-        minDayMg = pt.weight * regimen.min;
-        maxDayMg = pt.weight * regimen.max;
+        const rawMinDay = pt.weight * regimen.min;
+        const rawMaxDay = pt.weight * regimen.max;
+        minDayMg = rawMinDay;
+        maxDayMg = rawMaxDay;
         if (regimen.maxDayMg) {
           minDayMg = Math.min(minDayMg, regimen.maxDayMg);
           maxDayMg = Math.min(maxDayMg, regimen.maxDayMg);
+          noteIfCapped(rawMinDay, rawMaxDay, minDayMg, maxDayMg, `${fmt(regimen.maxDayMg, 0)} mg/วัน`, capLimits);
         }
-        minDoseMg = minDayMg / freq;
-        maxDoseMg = maxDayMg / freq;
+        const rawMinDose = minDayMg / freq;
+        const rawMaxDose = maxDayMg / freq;
+        minDoseMg = rawMinDose;
+        maxDoseMg = rawMaxDose;
         if (regimen.maxDoseMg) {
           minDoseMg = Math.min(minDoseMg, regimen.maxDoseMg);
           maxDoseMg = Math.min(maxDoseMg, regimen.maxDoseMg);
           minDayMg = minDoseMg * freq;
           maxDayMg = maxDoseMg * freq;
+          noteIfCapped(rawMinDose, rawMaxDose, minDoseMg, maxDoseMg, `${fmt(regimen.maxDoseMg, 0)} mg/ครั้ง`, capLimits);
         }
       } else if (regimen.basis === 'per_dose') {
-        minDoseMg = pt.weight * regimen.min;
-        maxDoseMg = pt.weight * regimen.max;
+        const rawMinDose = pt.weight * regimen.min;
+        const rawMaxDose = pt.weight * regimen.max;
+        minDoseMg = rawMinDose;
+        maxDoseMg = rawMaxDose;
         if (regimen.maxDoseMg) {
           minDoseMg = Math.min(minDoseMg, regimen.maxDoseMg);
           maxDoseMg = Math.min(maxDoseMg, regimen.maxDoseMg);
+          noteIfCapped(rawMinDose, rawMaxDose, minDoseMg, maxDoseMg, `${fmt(regimen.maxDoseMg, 0)} mg/ครั้ง`, capLimits);
         }
-        minDayMg = minDoseMg * freq;
-        maxDayMg = maxDoseMg * freq;
+        const rawMinDay = minDoseMg * freq;
+        const rawMaxDay = maxDoseMg * freq;
+        minDayMg = rawMinDay;
+        maxDayMg = rawMaxDay;
         if (regimen.maxDayMg) {
           minDayMg = Math.min(minDayMg, regimen.maxDayMg);
           maxDayMg = Math.min(maxDayMg, regimen.maxDayMg);
           minDoseMg = minDayMg / freq;
-          maxDoseMg = maxDoseMg / freq;
+          maxDoseMg = maxDayMg / freq;
+          noteIfCapped(rawMinDay, rawMaxDay, minDayMg, maxDayMg, `${fmt(regimen.maxDayMg, 0)} mg/วัน`, capLimits);
         }
       } else if (regimen.basis === 'domperidone_rule') {
         if (pt.weight >= 35) {
           minDoseMg = 10; maxDoseMg = 10;
         } else {
-          minDoseMg = Math.min(pt.weight * 0.3, 10);
-          maxDoseMg = Math.min(pt.weight * 0.6, 10);
+          const rawMin = pt.weight * 0.3;
+          const rawMax = pt.weight * 0.6;
+          minDoseMg = Math.min(rawMin, 10);
+          maxDoseMg = Math.min(rawMax, 10);
+          noteIfCapped(rawMin, rawMax, minDoseMg, maxDoseMg, '10 mg/ครั้ง', capLimits);
         }
         minDayMg = minDoseMg * freq;
         maxDayMg = maxDoseMg * freq;
       } else if (regimen.basis === 'age_fixed_guaifenesin') {
         const yrs = pt.totalMonths / 12;
         if (yrs < 2) {
-          minDoseMg = 25; maxDoseMg = 50;
+          contraindicated = true;
           warning = 'เด็กอายุต่ำกว่า 2 ปี: ตาราง DOSE PED ระบุขนาดยาตั้งแต่ 2 ปีขึ้นไป';
         } else if (yrs < 6) {
           minDoseMg = 50; maxDoseMg = 100;
@@ -952,8 +1080,10 @@
         } else {
           minDoseMg = 200; maxDoseMg = 400;
         }
-        minDayMg = minDoseMg * freq;
-        maxDayMg = maxDoseMg * freq;
+        if (!contraindicated) {
+          minDayMg = minDoseMg * freq;
+          maxDayMg = maxDoseMg * freq;
+        }
       } else if (regimen.basis === 'oseltamivir_rule') {
         if (pt.totalMonths < 3) { minDoseMg = 12; maxDoseMg = 12; }
         else if (pt.totalMonths <= 5) { minDoseMg = 20; maxDoseMg = 20; }
@@ -970,12 +1100,24 @@
 
       if (drug.id === 'cotrimoxazole' && pt.totalMonths < 2) {
         warning = 'Co-trimoxazole แนะนำในทารกอายุมากกว่า 2 เดือนขึ้นไป';
+        contraindicated = true;
       }
       if (drug.id === 'tazocin_iv' && pt.totalMonths <= 6) {
         warning = 'เกณฑ์ Tazocin ในตารางระบุสำหรับทารกอายุ > 6 เดือนขึ้นไป';
+        contraindicated = true;
+      }
+      if (contraindicated) {
+        minDoseMg = 0;
+        maxDoseMg = 0;
+        minDayMg = 0;
+        maxDayMg = 0;
+        capLimits.length = 0;
       }
 
-      return { minDoseMg, maxDoseMg, minDayMg, maxDayMg, warning };
+      const capNote = capLimits.length
+        ? `ขนาดตามน้ำหนักเกินเพดานที่กำหนด จึงปรับลงเหลือไม่เกิน ${capLimits.join(' และ ')}`
+        : '';
+      return { minDoseMg, maxDoseMg, minDayMg, maxDayMg, warning, contraindicated, capNote };
     }
 
     // ============================================================================
@@ -1000,9 +1142,13 @@
       state.rxUnit = 'mg_dose';
 
       const pt = getPatient();
-      const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
-      const midDose = Math.round(((range.minDoseMg + range.maxDoseMg) / 2) * 10) / 10;
-      state.rxValue = String(midDose);
+      const range = pt.valid ? calculateRecommendedRange(drug, reg, pt, state.freqPerDay) : null;
+      if (!range || range.contraindicated) {
+        state.rxValue = '';
+      } else {
+        const midDose = Math.round(((range.minDoseMg + range.maxDoseMg) / 2) * 10) / 10;
+        state.rxValue = String(midDose);
+      }
 
       updateCategoryTabUI();
       renderDrugList();
@@ -1059,7 +1205,15 @@
       const drug = getCurrentDrug();
       const reg = getCurrentRegimen(drug);
       const pt = getPatient();
+      if (!pt.valid) {
+        updateDynamicPanels();
+        return;
+      }
       const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
+      if (range.contraindicated) {
+        updateDynamicPanels();
+        return;
+      }
 
       let targetMgDose = range.minDoseMg;
       if (mode === 'mid') targetMgDose = (range.minDoseMg + range.maxDoseMg) / 2;
@@ -1199,20 +1353,102 @@
       unitSelect.innerHTML = units.map(u => `<option value="${u.val}" ${u.val === state.rxUnit ? 'selected' : ''}>${u.label}</option>`).join('');
     }
 
+    function setPatientFieldHighlights(pt) {
+      const weightCard = document.getElementById('ptWeightCard');
+      const ageCard = document.getElementById('ptAgeCard');
+      if (weightCard) {
+        weightCard.classList.toggle('ring-2', !!pt.weightError);
+        weightCard.classList.toggle('ring-rose-500', !!pt.weightError);
+      }
+      if (ageCard) {
+        ageCard.classList.toggle('ring-2', !!pt.ageError);
+        ageCard.classList.toggle('ring-rose-500', !!pt.ageError);
+      }
+      const weightInput = document.getElementById('ptWeight');
+      const ageY = document.getElementById('ptAgeY');
+      const ageM = document.getElementById('ptAgeM');
+      if (weightInput) weightInput.setAttribute('aria-invalid', pt.weightError ? 'true' : 'false');
+      if (ageY) ageY.setAttribute('aria-invalid', pt.ageError ? 'true' : 'false');
+      if (ageM) ageM.setAttribute('aria-invalid', pt.ageError ? 'true' : 'false');
+    }
+
+    function showCalcNote(id, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text || '';
+      el.classList.toggle('hidden', !text);
+    }
+
+    function clearDoseOutputs(message, tone) {
+      state.currentLabelText = '';
+      showCalcNote('capAppliedNote', '');
+      showCalcNote('missingMaxNote', '');
+      const placeholder = tone === 'block' ? 'ไม่แนะนำ' : '—';
+      document.getElementById('rangeMgPerDose').textContent = placeholder;
+      document.getElementById('rangeMgPerDoseSub').textContent = '';
+      document.getElementById('rangeMgPerDay').textContent = placeholder;
+      document.getElementById('rangeMgPerDaySub').textContent = '';
+      document.getElementById('rangeMlPerDose').textContent = placeholder;
+      document.getElementById('rangeMlPerDoseSub').textContent = '';
+
+      const valBox = document.getElementById('rxValidationBox');
+      valBox.className = tone === 'block'
+        ? 'mt-3 rounded-2xl border-2 border-rose-400 bg-rose-50 flex-1 flex items-center justify-center p-5 text-rose-950 text-sm font-extrabold text-center'
+        : 'mt-3 rounded-2xl border-2 border-amber-400 bg-amber-50 flex-1 flex items-center justify-center p-5 text-amber-950 text-sm font-extrabold text-center';
+      valBox.textContent = message;
+
+      const step3 = document.getElementById('step3Container');
+      if (step3) {
+        step3.replaceChildren();
+        const p = document.createElement('p');
+        p.className = `m-auto max-w-md text-sm sm:text-base font-extrabold text-center ${tone === 'block' ? 'text-rose-900' : 'text-amber-950'}`;
+        p.textContent = tone === 'block'
+          ? 'ไม่แนะนำสำหรับอายุนี้ จึงไม่แสดงขนาดยาแนะนำและฉลากจ่ายยา'
+          : 'ยังไม่คำนวณขนาดยาและฉลาก จนกว่าข้อมูลผู้ป่วยจะถูกต้อง';
+        step3.appendChild(p);
+      }
+    }
+
     function updateDynamicPanels() {
       const pt = getPatient();
       const drug = getCurrentDrug();
       const reg = getCurrentRegimen(drug);
       const freq = state.freqPerDay;
-      const range = calculateRecommendedRange(drug, reg, pt, freq);
+      setPatientFieldHighlights(pt);
 
+      const patientAlert = document.getElementById('patientValidationAlert');
       const alertEl = document.getElementById('ageRestrictionAlert');
-      if (range.warning) {
-        alertEl.textContent = '⚠️ ' + range.warning;
-        alertEl.classList.remove('hidden');
-      } else {
-        alertEl.classList.add('hidden');
+      const amberAlert = 'mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-semibold';
+
+      if (!pt.valid) {
+        patientAlert.textContent = pt.errors.join(' ');
+        patientAlert.classList.remove('hidden');
+        alertEl.className = 'hidden ' + amberAlert;
+        alertEl.textContent = '';
+        clearDoseOutputs(pt.errors.join(' '), 'invalid');
+        return;
       }
+      patientAlert.textContent = '';
+      patientAlert.classList.add('hidden');
+
+      const range = calculateRecommendedRange(drug, reg, pt, freq);
+      if (range.contraindicated) {
+        alertEl.className = 'mt-3 px-3.5 py-3 rounded-xl bg-rose-50 border-2 border-rose-500 text-rose-950 text-sm sm:text-base font-extrabold';
+        alertEl.textContent = 'ไม่แนะนำ: ' + range.warning + ' — ไม่แสดงขนาดยาแนะนำ';
+        clearDoseOutputs('ไม่แนะนำ: ' + range.warning, 'block');
+        return;
+      }
+      if (range.warning) {
+        alertEl.className = amberAlert;
+        alertEl.textContent = '⚠️ ' + range.warning;
+      } else {
+        alertEl.className = 'hidden ' + amberAlert;
+        alertEl.textContent = '';
+      }
+      showCalcNote('capAppliedNote', range.capNote);
+      showCalcNote('missingMaxNote', regimenMissingMax(reg)
+        ? 'ยังไม่ได้กำหนดขนาดยาสูงสุด (max) ของสูตรนี้ ขนาดตามน้ำหนักจึงไม่ถูกจำกัดเพดาน — ต้องตรวจกับเกณฑ์อ้างอิง'
+        : '');
 
       document.getElementById('rangeMgPerDose').textContent = `${fmtRange(range.minDoseMg, range.maxDoseMg, 1)} mg`;
       document.getElementById('rangeMgPerDoseSub').textContent = `${fmtRange(range.minDoseMg / pt.weight, range.maxDoseMg / pt.weight, 2)} mg/kg/ครั้ง`;
@@ -1327,6 +1563,7 @@
               </span>
             </div>
             <p class="text-xs sm:text-sm font-semibold mt-2 leading-relaxed">${detailMsg}</p>
+            ${range.capNote ? `<p class="mt-2 text-xs font-bold bg-white/90 border border-sky-200 text-sky-950 rounded-lg px-2.5 py-1.5">${range.capNote}</p>` : ''}
 
             <!-- Visual Dose Range Bar -->
             <div class="mt-3 bg-white/85 p-2.5 rounded-xl border border-black/5">
@@ -1449,6 +1686,10 @@
     // ============================================================================
     function renderStep3Panel(drug, reg, pt, freq, range, activeDoseMg, isFromDoctorOrder) {
       const container = document.getElementById('step3Container');
+      if (!pt || pt.valid === false || (range && range.contraindicated)) {
+        state.currentLabelText = '';
+        return;
+      }
       const totalDoses = freq * pt.days;
       const sourceTag = isFromDoctorOrder
         ? `<span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">จากใบสั่งแพทย์: ${fmt(activeDoseMg, 1)} mg/ครั้ง</span>`
