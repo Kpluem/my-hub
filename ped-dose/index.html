@@ -846,7 +846,7 @@
       regimenId: 'std',
       freqPerDay: 3,
       rxValue: '',
-      rxUnit: 'mg_dose',
+      rxUnit: 'ml_dose',
       prepConcMgMl: 25,
       prepTabsOverride: null,
       reconConcMgMl: 100,
@@ -1026,15 +1026,19 @@
       state.prepConcMgMl = drug.defaultPrepConc || 20;
       state.prepTabsOverride = null;
       state.reconConcMgMl = drug.defaultReconConc || 100;
-      state.rxUnit = 'mg_dose';
+      state.rxUnit = preferredRxUnit(buildRxUnitOptions(state.freqPerDay));
 
       const pt = getPatient();
       if (!pt.valid) {
         state.rxValue = '';
       } else {
         const range = calculateRecommendedRange(drug, reg, pt, state.freqPerDay);
-        const midDose = Math.round(((range.minDoseMg + range.maxDoseMg) / 2) * 10) / 10;
-        state.rxValue = String(midDose);
+        const midMg = (range.minDoseMg + range.maxDoseMg) / 2;
+        if (state.rxUnit === 'mg_dose') {
+          state.rxValue = String(Math.round(midMg * 10) / 10);
+        } else {
+          state.rxValue = formatOrderAmount(orderAmountFromMgDose(midMg, drug));
+        }
       }
 
       updateCategoryTabUI();
@@ -1088,6 +1092,31 @@
       updateDynamicPanels();
     }
 
+    function buildRxUnitOptions(freq) {
+      return [
+        { val: 'mg_dose', label: `mg / ครั้ง (${freqText(freq)})` },
+        { val: 'ml_dose', label: `ml / ครั้ง (${freqText(freq)})` },
+        { val: 'mg_day', label: `mg / วัน (รวมทั้งวัน)` }
+      ];
+    }
+
+    function preferredRxUnit(options) {
+      if (options.some(u => u.val === 'ml_dose')) return 'ml_dose';
+      if (options.some(u => u.val === 'mg_dose')) return 'mg_dose';
+      return options.length ? options[0].val : 'mg_dose';
+    }
+
+    function orderAmountFromMgDose(targetMgDose, drug) {
+      const conc = drug.category === 'liquid' ? drug.mgPerMl : (drug.category === 'solid' ? state.prepConcMgMl : state.reconConcMgMl);
+      if (state.rxUnit === 'ml_dose') return targetMgDose / conc;
+      if (state.rxUnit === 'mg_day') return targetMgDose * state.freqPerDay;
+      return targetMgDose;
+    }
+
+    function formatOrderAmount(amount) {
+      return String(Math.round(amount * 100) / 100);
+    }
+
     function fillDoctorOrder(mode) {
       const drug = getCurrentDrug();
       const reg = getCurrentRegimen(drug);
@@ -1102,12 +1131,7 @@
       if (mode === 'mid') targetMgDose = (range.minDoseMg + range.maxDoseMg) / 2;
       if (mode === 'max') targetMgDose = range.maxDoseMg;
 
-      let val = targetMgDose;
-      const conc = drug.category === 'liquid' ? drug.mgPerMl : (drug.category === 'solid' ? state.prepConcMgMl : state.reconConcMgMl);
-      if (state.rxUnit === 'ml_dose') val = targetMgDose / conc;
-      else if (state.rxUnit === 'mg_day') val = targetMgDose * state.freqPerDay;
-
-      state.rxValue = String(Math.round(val * 100) / 100);
+      state.rxValue = formatOrderAmount(orderAmountFromMgDose(targetMgDose, drug));
       state.prepTabsOverride = null;
       syncRxInputBox();
       updateDynamicPanels();
@@ -1228,11 +1252,10 @@
       freqSelect.innerHTML = reg.freqs.map(f => `<option value="${f}" ${f === state.freqPerDay ? 'selected' : ''}>${freqText(f)}</option>`).join('');
 
       const unitSelect = document.getElementById('rxUnitSelect');
-      const units = [
-        { val: 'mg_dose', label: `mg / ครั้ง (${freqText(state.freqPerDay)})` },
-        { val: 'ml_dose', label: `ml / ครั้ง (${freqText(state.freqPerDay)})` },
-        { val: 'mg_day', label: `mg / วัน (รวมทั้งวัน)` }
-      ];
+      const units = buildRxUnitOptions(state.freqPerDay);
+      if (!units.some(u => u.val === state.rxUnit)) {
+        state.rxUnit = preferredRxUnit(units);
+      }
       unitSelect.innerHTML = units.map(u => `<option value="${u.val}" ${u.val === state.rxUnit ? 'selected' : ''}>${u.label}</option>`).join('');
     }
 
