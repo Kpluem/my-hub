@@ -932,8 +932,10 @@
         if (regimen.maxDayMg) {
           minDayMg = Math.min(minDayMg, regimen.maxDayMg);
           maxDayMg = Math.min(maxDayMg, regimen.maxDayMg);
+          // Rebuild both per-dose ends from the capped daily totals.
+          // Dividing maxDoseMg here would apply frequency a second time.
           minDoseMg = minDayMg / freq;
-          maxDoseMg = maxDoseMg / freq;
+          maxDoseMg = maxDayMg / freq;
         }
       } else if (regimen.basis === 'domperidone_rule') {
         if (pt.weight >= 35) {
@@ -977,12 +979,6 @@
       }
       if (drug.id === 'tazocin_iv' && pt.totalMonths <= 6) {
         warning = 'เกณฑ์ Tazocin ในตารางระบุสำหรับทารกอายุ > 6 เดือนขึ้นไป';
-      }
-
-      // The shared per-dose branch divides the per-dose max by frequency again after applying maxDayMg.
-      // Rebuild only Paracetamol's per-dose max from the capped daily total.
-      if (drug.id === 'paracetamol' && regimen.maxDayMg && freq) {
-        maxDoseMg = maxDayMg / freq;
       }
 
       return { minDoseMg, maxDoseMg, minDayMg, maxDayMg, warning };
