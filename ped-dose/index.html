@@ -2,32 +2,104 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>DOSE PED — Pediatric Dose & Compounding</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ped Dose</title>
 
   <!-- PWA & FULLSCREEN META TAGS -->
-  <meta name="application-name" content="DOSE PED">
-  <meta name="apple-mobile-web-app-title" content="DOSE PED">
+  <meta name="application-name" content="Ped Dose">
+  <meta name="apple-mobile-web-app-title" content="Ped Dose">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#0d9488">
+  <meta name="theme-color" content="#f4f1ec">
 
-  <!-- Fallback SVG Icon -->
-  <link id="faviconLink" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230d9488'/%3E%3Cstop offset='100%25' stop-color='%234f46e5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23g)'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900' font-size='210'%3ERx%3C/text%3E%3Ctext x='50%25' y='82%25' dominant-baseline='middle' text-anchor='middle' fill='%2399f6e4' font-family='sans-serif' font-weight='800' font-size='76'%3EPED%3C/text%3E%3C/svg%3E">
-  <link id="appleTouchIconLink" rel="apple-touch-icon" sizes="180x180" href="">
-  <link id="manifestLink" rel="manifest" href="">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="manifest" href="manifest.webmanifest">
 
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: { 50:'#faf7f3', 100:'#f4f1ec', 200:'#e5ddd3', 300:'#d9cfc3', 400:'#8a8178', 500:'#5c564e', 600:'#5c564e', 700:'#3f3a34', 800:'#2a2622', 900:'#2a2622', 950:'#1c1916' },
+            teal: { 50:'#eef5f2', 100:'#e8f5ee', 200:'#d5e4de', 300:'#b7d7c6', 400:'#7dbaa4', 500:'#3e6b5d', 600:'#3e6b5d', 700:'#345a4e', 800:'#145c45', 900:'#145c45', 950:'#0f3d2e' },
+            emerald: { 50:'#eef5f2', 100:'#e8f5ee', 200:'#cfe3d8', 300:'#9dceb6', 400:'#6eae96', 500:'#2f6b56', 600:'#1f6b4a', 700:'#145c45', 800:'#145c45', 900:'#0f3d2e', 950:'#0c2e24' },
+            indigo: { 50:'#e7f3fb', 100:'#dceaf3', 200:'#c9e0f0', 300:'#a9cbe3', 400:'#6aa0c4', 500:'#3d6f92', 600:'#1e4e72', 700:'#1e4e72', 800:'#163a56', 900:'#163a56', 950:'#102838' },
+            violet: { 50:'#f6f1fa', 100:'#e6e0f2', 200:'#d4cbe4', 300:'#b7adc9', 400:'#8d82a6', 500:'#5c5270', 600:'#4a3d68', 700:'#4a3d68', 800:'#352c4c', 900:'#2a223c', 950:'#1c1730' },
+            purple: { 50:'#f6f1fa', 100:'#e6e0f2', 200:'#d4cbe4', 300:'#b7adc9', 400:'#8d82a6', 500:'#5c5270', 600:'#4a3d68', 700:'#4a3d68', 800:'#352c4c', 900:'#2a223c', 950:'#1c1730' },
+            sky: { 50:'#e7f3fb', 100:'#dceaf3', 200:'#c9e0f0', 300:'#a9cbe3', 400:'#6aa0c4', 500:'#3d6f92', 600:'#1e4e72', 700:'#1e4e72', 800:'#163a56', 900:'#163a56', 950:'#102838' },
+            cyan: { 50:'#eef6f4', 100:'#dceee8', 200:'#c9e3db', 300:'#a9d0c4', 400:'#6eae9a', 500:'#3e6b5d', 600:'#345a4e', 700:'#145c45', 800:'#145c45', 900:'#0f3d2e', 950:'#0c2e24' },
+            blue: { 50:'#e7f3fb', 100:'#dceaf3', 200:'#c9e0f0', 300:'#a9cbe3', 400:'#6aa0c4', 500:'#3d6f92', 600:'#1e4e72', 700:'#1e4e72', 800:'#163a56', 900:'#163a56', 950:'#102838' },
+            rose: { 50:'#fdecef', 100:'#fde8ef', 200:'#f3c9d6', 300:'#e89aab', 400:'#d48b9c', 500:'#b4546a', 600:'#8f1d36', 700:'#8f1d36', 800:'#7f1d32', 900:'#6a182a', 950:'#4a101c' },
+            pink: { 50:'#fde8ef', 100:'#f6dde3', 200:'#f3c9d6', 300:'#e89aab', 400:'#d48b9c', 500:'#b4546a', 600:'#8f1d36', 700:'#7f1d32', 800:'#6a182a', 900:'#5a1424', 950:'#3d0e18' },
+            red: { 50:'#fdecef', 100:'#fde8ef', 200:'#f3c9d6', 300:'#e89aab', 400:'#d48b9c', 500:'#b4233c', 600:'#8f1d36', 700:'#7f1d32', 800:'#6a182a', 900:'#5a1424', 950:'#3d0e18' },
+            amber: { 50:'#fff6e4', 100:'#fff1e6', 200:'#f0d7b4', 300:'#e7c98a', 400:'#d4a15a', 500:'#b7791f', 600:'#9a5b12', 700:'#7a4b08', 800:'#7a4b08', 900:'#5c3a06', 950:'#3d2604' },
+            orange: { 50:'#fff1e6', 100:'#ffe7d6', 200:'#f0c2a2', 300:'#e7b089', 400:'#d4894a', 500:'#c2410c', 600:'#9a3412', 700:'#8a3b12', 800:'#7a4a28', 900:'#5c3510', 950:'#3d2208' },
+            yellow: { 50:'#fff6e4', 100:'#fff1d6', 200:'#f0e0b4', 300:'#e7d08a', 400:'#d4b45a', 500:'#b7901f', 600:'#8a6a12', 700:'#7a4b08', 800:'#5c3a06', 900:'#3d2604', 950:'#2a1a02' }
+          }
+        }
+      }
+    };
+  </script>
   <style>
     html, body {
-      font-family: 'Sarabun', sans-serif;
-      background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 50%, #f5f3ff 100%);
-      color: #1e293b;
+      font-family: "Prompt", "Sarabun", "Thonburi", sans-serif;
+      background:
+        radial-gradient(980px 420px at 0% -10%, rgba(247, 226, 220, 0.85), transparent 60%),
+        radial-gradient(820px 480px at 100% 0%, rgba(214, 232, 222, 0.8), transparent 55%),
+        #f4f1ec;
+      color: #2a2622;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
+    }
+    button, input, select { font-family: inherit; }
+    button { cursor: pointer; }
+    ::selection { background: #d7ebe3; color: #2a2622; }
+    .bg-white { background-color: #fffcf9; }
+    #tab-liquid, #tab-solid, #tab-injection,
+    #searchDrugInput, #rxOrderInput, #rxUnitSelect, #freqSelect,
+    button[onclick^="setQuickWeight"],
+    button[onclick^="fillDoctorOrder"],
+    button[onclick^="toggleInstallModal"],
+    button[onclick^="selectDrug"],
+    button[onclick^="selectRegimen"],
+    button[onclick^="changePrepConc"],
+    button[onclick^="changeReconConc"],
+    button[onclick^="adjustPrepUnits"],
+    button[onclick^="copyPharmacyLabel"],
+    #nativeInstallBtn {
+      min-height: 44px;
+    }
+    button[onclick^="adjustPrepUnits"] { min-width: 44px; }
+    #rxValidationBox { border-left-width: 6px; border-radius: 20px; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid #3e6b5d;
+      outline-offset: 2px;
+    }
+    header.bg-white\/95 {
+      background: rgba(244, 241, 236, 0.92);
+      border-color: #e5ddd3;
+      box-shadow: none;
+      backdrop-filter: blur(14px);
+    }
+    #deskTopBar > section {
+      background: rgba(255, 252, 249, 0.72);
+      border-color: #e5ddd3;
+    }
+    main > aside,
+    main section > .rounded-2xl,
+    #step3Container {
+      border-radius: 24px;
+      border-color: #e5ddd3;
+      box-shadow: 0 1px 2px rgba(60, 40, 20, 0.04), 0 12px 32px rgba(60, 40, 20, 0.04);
+    }
+    #deskTopBar .grid.grid-cols-3 > div {
+      min-height: 72px;
+      border-radius: 18px;
     }
     @media (min-width: 1024px) {
       html, body { overflow-x: clip; }
@@ -44,8 +116,8 @@
     :root { --desk-top: 10rem; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    ::-webkit-scrollbar-thumb { background: #d9cfc3; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #8a8178; }
 
     /* ซ่อน Scrollbar แนวนอนบนมือถือ */
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -76,13 +148,10 @@
 
         <!-- Brand. On desktop this is the left column; the install button is placed in the right column. -->
         <div class="flex items-center gap-2.5 min-w-0 lg:justify-self-start">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 xl:w-11 xl:h-11 rounded-xl bg-gradient-to-br from-teal-500 via-teal-600 to-indigo-600 text-white flex flex-col items-center justify-center shadow-sm shrink-0">
-            <span class="font-extrabold text-xs sm:text-sm xl:text-base leading-none">Rx</span>
-            <span class="text-[7px] sm:text-[8px] xl:text-[9px] font-extrabold text-teal-200 tracking-widest mt-0.5 leading-none">PED</span>
-          </div>
+          <img src="icons/apple-touch-icon.png" alt="" class="w-10 h-10 xl:w-11 xl:h-11 rounded-xl shadow-sm shrink-0">
           <div class="min-w-0">
             <div class="flex items-center gap-1.5">
-              <h1 class="text-base sm:text-lg xl:text-xl font-extrabold text-teal-900 truncate">DOSE PED</h1>
+              <h1 class="text-base sm:text-lg xl:text-xl font-semibold text-slate-900 truncate">Ped Dose</h1>
               <span class="hidden sm:inline-block text-[11px] xl:text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
                 Pharmacist Tool
               </span>
@@ -92,7 +161,7 @@
         </div>
 
         <button type="button" onclick="toggleInstallModal(true)"
-          class="shrink-0 justify-self-end inline-flex items-center gap-1 text-xs xl:text-sm font-bold px-2.5 py-1.5 xl:px-3.5 xl:py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition lg:col-start-3 lg:row-start-1">
+          class="shrink-0 justify-self-end inline-flex items-center justify-center gap-1 text-sm font-semibold px-4 rounded-full bg-teal-600 hover:bg-teal-700 text-white border border-teal-600 transition lg:col-start-3 lg:row-start-1">
           <span>📲</span><span>ติดตั้งแอป</span>
         </button>
 
@@ -167,12 +236,12 @@
         <!-- Quick Weight Chips. Scroll on mobile; wrap beside the inputs on desktop. -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 lg:flex-1 lg:min-w-0 lg:flex-wrap lg:content-center lg:overflow-visible lg:gap-2">
           <span class="text-xs 2xl:text-sm font-bold text-slate-400 shrink-0 mr-0.5">เลือกด่วน:</span>
-          <button type="button" onclick="setQuickWeight(6,0,5)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">6 kg (5 ด.)</button>
-          <button type="button" onclick="setQuickWeight(10,1,0)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">10 kg (1 ปี)</button>
-          <button type="button" onclick="setQuickWeight(12,2,0)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">12 kg (2 ปี)</button>
-          <button type="button" onclick="setQuickWeight(15,4,0)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition">15 kg (4 ปี)</button>
-          <button type="button" onclick="setQuickWeight(20,6,0)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition">20 kg (6 ปี)</button>
-          <button type="button" onclick="setQuickWeight(30,10,0)" class="shrink-0 px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition">30 kg (10 ปี)</button>
+          <button type="button" onclick="setQuickWeight(6,0,5)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">6 kg (5 ด.)</button>
+          <button type="button" onclick="setQuickWeight(10,1,0)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">10 kg (1 ปี)</button>
+          <button type="button" onclick="setQuickWeight(12,2,0)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition">12 kg (2 ปี)</button>
+          <button type="button" onclick="setQuickWeight(15,4,0)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition">15 kg (4 ปี)</button>
+          <button type="button" onclick="setQuickWeight(20,6,0)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition">20 kg (6 ปี)</button>
+          <button type="button" onclick="setQuickWeight(30,10,0)" class="shrink-0 inline-flex items-center px-3 rounded-full text-xs 2xl:text-sm font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition">30 kg (10 ปี)</button>
         </div>
 
       </div>
@@ -336,13 +405,13 @@
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <img id="modalAppIconPreview" src="" alt="App Icon" class="w-14 h-14 rounded-2xl shadow-md border border-slate-200">
+          <img id="modalAppIconPreview" src="icons/apple-touch-icon.png" alt="App Icon" class="w-14 h-14 rounded-2xl shadow-sm border border-slate-200">
           <div>
-            <h3 class="text-lg font-extrabold text-slate-900">ติดตั้งแอป DOSE PED</h3>
+            <h3 class="text-lg font-semibold text-slate-900">ติดตั้งแอป Ped Dose</h3>
             <p class="text-xs font-semibold text-teal-600">เปิดเต็มจอ • มีไอคอนบนหน้าจอมือถือ</p>
           </div>
         </div>
-        <button type="button" onclick="toggleInstallModal(false)" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+        <button type="button" onclick="toggleInstallModal(false)" class="w-11 h-11 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold" aria-label="ปิด">✕</button>
       </div>
 
       <button id="nativeInstallBtn" type="button" onclick="triggerNativeInstall()"
@@ -370,7 +439,7 @@
       </div>
 
       <button type="button" onclick="toggleInstallModal(false)"
-        class="w-full py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition">
+        class="w-full rounded-2xl font-semibold text-sm bg-teal-700 text-white hover:bg-teal-800 transition">
         เข้าใจแล้ว
       </button>
     </div>
@@ -383,97 +452,9 @@
     let deferredInstallPrompt = null;
 
     function setupPWAAppIconAndManifest() {
-      try {
-        const size = 512;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-
-        const bgGrad = ctx.createLinearGradient(0, 0, size, size);
-        bgGrad.addColorStop(0, '#0d9488');
-        bgGrad.addColorStop(0.55, '#0284c7');
-        bgGrad.addColorStop(1, '#4f46e5');
-
-        const r = 110;
-        ctx.beginPath();
-        ctx.moveTo(r, 0);
-        ctx.lineTo(size - r, 0);
-        ctx.quadraticCurveTo(size, 0, size, r);
-        ctx.lineTo(size, size - r);
-        ctx.quadraticCurveTo(size, size, size - r, size);
-        ctx.lineTo(r, size);
-        ctx.quadraticCurveTo(0, size, 0, size - r);
-        ctx.lineTo(0, r);
-        ctx.quadraticCurveTo(0, 0, r, 0);
-        ctx.closePath();
-        ctx.fillStyle = bgGrad;
-        ctx.fill();
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.beginPath();
-        ctx.arc(400, 110, 140, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#5eead4';
-        ctx.fillRect(380, 72, 22, 66);
-        ctx.fillRect(358, 94, 66, 22);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 215px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Rx', size / 2, 215);
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.28)';
-        const pillW = 370, pillH = 96, pillX = (size - pillW) / 2, pillY = 355;
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(pillX, pillY, pillW, pillH, 48);
-        } else {
-          ctx.rect(pillX, pillY, pillW, pillH);
-        }
-        ctx.fill();
-
-        ctx.fillStyle = '#99f6e4';
-        ctx.font = '800 58px sans-serif';
-        ctx.fillText('DOSE PED', size / 2, pillY + pillH / 2 + 3);
-
-        const pngDataUrl = canvas.toDataURL('image/png');
-
-        const appleIcon = document.getElementById('appleTouchIconLink');
-        if (appleIcon) appleIcon.href = pngDataUrl;
-
-        const favIcon = document.getElementById('faviconLink');
-        if (favIcon) {
-          favIcon.type = 'image/png';
-          favIcon.href = pngDataUrl;
-        }
-
-        const previewImg = document.getElementById('modalAppIconPreview');
-        if (previewImg) previewImg.src = pngDataUrl;
-
-        const manifestObj = {
-          name: 'DOSE PED — Pediatric Dose Calculator',
-          short_name: 'DOSE PED',
-          description: 'ระบบตรวจสอบขนาดยาเด็กตามใบสั่งแพทย์และคำนวณสูตรเตรียมยาน้ำ',
-          start_url: window.location.href,
-          display: 'standalone',
-          orientation: 'any',
-          background_color: '#f0fdfa',
-          theme_color: '#0d9488',
-          icons: [
-            { src: pngDataUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-            { src: pngDataUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-          ]
-        };
-
-        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        const manifestLink = document.getElementById('manifestLink');
-        if (manifestLink) manifestLink.href = manifestUrl;
-      } catch (e) {
-        console.warn('PWA icon generation skipped:', e);
+      const previewImg = document.getElementById('modalAppIconPreview');
+      if (previewImg && !previewImg.getAttribute('src')) {
+        previewImg.src = 'icons/apple-touch-icon.png';
       }
     }
 
