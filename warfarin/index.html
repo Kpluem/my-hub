@@ -2,448 +2,777 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Warfarin Rx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <title>Warfarin</title>
 
-    <!-- PWA & Fullscreen Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Warfarin Rx">
-    <meta name="application-name" content="Warfarin Rx">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Warfarin">
+    <meta name="application-name" content="Warfarin">
+    <meta name="theme-color" content="#f4f1ec">
 
-    <!-- Dynamic App Icons & Manifest -->
-    <link id="appleTouchIcon" rel="apple-touch-icon">
-    <link id="favIcon" rel="icon" type="image/png">
-    <link id="pwaManifest" rel="manifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="manifest" href="manifest.webmanifest">
 
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Auto-Generate High-Res App Icon (512x512) & Manifest -->
-    <script>
-        let generatedAppIconUrl = "";
-        (function setupStandalonePWA() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-
-            // 1. Background Gradient
-            const bgGrad = ctx.createLinearGradient(0, 0, 512, 512);
-            bgGrad.addColorStop(0, '#4f46e5');
-            bgGrad.addColorStop(0.5, '#7c3aed');
-            bgGrad.addColorStop(1, '#db2777');
-            ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, 512, 512);
-
-            // 2. Soft Top-Left Highlight
-            const glowGrad = ctx.createRadialGradient(140, 100, 20, 256, 256, 360);
-            glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
-            glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = glowGrad;
-            ctx.fillRect(0, 0, 512, 512);
-
-            // 3. Draw 3 Warfarin Pills
-            function drawWarfarinPill(cx, cy, r, colorTop, colorBot) {
-                ctx.save();
-                ctx.shadowColor = 'rgba(15, 23, 42, 0.35)';
-                ctx.shadowBlur = 18;
-                ctx.shadowOffsetY = 8;
-
-                const pGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-                pGrad.addColorStop(0, colorTop);
-                pGrad.addColorStop(1, colorBot);
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.fillStyle = pGrad;
-                ctx.fill();
-                ctx.lineWidth = 5;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-                ctx.stroke();
-
-                ctx.shadowColor = 'transparent';
-                ctx.beginPath();
-                ctx.moveTo(cx - r * 0.65, cy);
-                ctx.lineTo(cx + r * 0.65, cy);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            drawWarfarinPill(148, 175, 52, '#fb923c', '#ea580c'); // 2 mg
-            drawWarfarinPill(256, 132, 58, '#38bdf8', '#2563eb'); // 3 mg
-            drawWarfarinPill(364, 175, 52, '#f472b6', '#e11d48'); // 5 mg
-
-            // 4. Typography
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '900 135px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.shadowColor = 'rgba(15, 23, 42, 0.3)';
-            ctx.shadowBlur = 14;
-            ctx.shadowOffsetY = 6;
-            ctx.fillText('Rx', 256, 365);
-
-            ctx.font = '800 42px sans-serif';
-            ctx.fillStyle = '#fde68a';
-            ctx.fillText('WARFARIN', 256, 435);
-
-            generatedAppIconUrl = canvas.toDataURL('image/png');
-            document.getElementById('appleTouchIcon').href = generatedAppIconUrl;
-            document.getElementById('favIcon').href = generatedAppIconUrl;
-
-            const manifest = {
-                name: "Warfarin Rx — Smart Clinic",
-                short_name: "Warfarin Rx",
-                start_url: window.location.href,
-                display: "standalone",
-                background_color: "#eef2ff",
-                theme_color: "#4f46e5",
-                orientation: "portrait-primary",
-                icons: [
-                    {
-                        src: generatedAppIconUrl,
-                        sizes: "512x512",
-                        type: "image/png",
-                        purpose: "any maskable"
-                    }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-            document.getElementById('pwaManifest').href = URL.createObjectURL(manifestBlob);
-        })();
-    </script>
-
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html { color-scheme: light; }
         html, body {
-            font-family: 'Prompt', sans-serif;
+            margin: 0;
+            font-family: "Prompt", "Noto Sans Thai", "Thonburi", sans-serif;
+            color: #2a2622;
+            background:
+                radial-gradient(980px 420px at 0% -10%, rgba(247, 226, 220, 0.85), transparent 60%),
+                radial-gradient(820px 480px at 100% 0%, rgba(214, 232, 222, 0.8), transparent 55%),
+                #f4f1ec;
             -webkit-tap-highlight-color: transparent;
-            background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 35%, #fdf2f8 70%, #ecfeff 100%);
-            background-attachment: fixed;
-            overflow-x: hidden;
-            width: 100%;
-        }
-        /* จัดการ Safe Area บนมือถือเมื่อเปิดโหมดเต็มจอ (Standalone) */
-        .safe-header {
-            padding-top: env(safe-area-inset-top, 0px);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
         }
         body {
-            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+            min-height: 100vh;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+            overflow-x: hidden;
         }
-        input[type=number]::-webkit-inner-spin-button, 
+        h1, h2, h3, p { margin: 0; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; }
+        ::selection { background: #d7ebe3; color: #2a2622; }
+        input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        
-        .smooth { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-
-        @keyframes fadeUp { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        input[type=number] { -moz-appearance: textfield; }
+        button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid #3e6b5d;
+            outline-offset: 2px;
         }
-        .animate-fade-up { animation: fadeUp 0.35s ease-out forwards; }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(244, 241, 236, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid #e5ddd3;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+        .header-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 12px;
+            min-height: 64px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 180px; }
+        .brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            flex: none;
+            box-shadow: 0 1px 2px rgba(60, 40, 20, 0.08);
+        }
+        .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+        .brand p {
+            margin-top: 1px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #5c564e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .legend { display: none; align-items: center; gap: 14px; color: #5c564e; font-size: 12px; font-weight: 600; }
+        .legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .ld { width: 10px; height: 10px; border-radius: 99px; display: inline-block; }
+        .ld2 { background: #ea580c; }
+        .ld3 { background: #0284c7; }
+        .ld5 { background: #e11d48; }
+        .header-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+        .header-btn {
+            min-height: 44px;
+            padding: 0 14px;
+            border-radius: 999px;
+            border: 1px solid #e5ddd3;
+            background: #fffcf9;
+            color: #2a2622;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .header-btn:active { transform: scale(0.99); }
+        .header-btn.primary {
+            background: #3e6b5d;
+            border-color: #3e6b5d;
+            color: #fff;
+        }
+        .header-btn.primary:hover { background: #345a4e; }
+        .header-btn:hover { background: #f7f3ee; }
+        .header-btn.primary:hover { background: #345a4e; }
+
+        .card {
+            background: #fffcf9;
+            border: 1px solid #e5ddd3;
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(60, 40, 20, 0.04), 0 12px 32px rgba(60, 40, 20, 0.04);
+        }
+        .as-flex { display: flex; flex-direction: column; height: 100%; }
+        .card-title { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+        .card-title h2 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+        .card-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            background: #3e6b5d;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+        }
+        .stack { display: flex; flex-direction: column; gap: 10px; }
+        .field {
+            background: #fffcf9;
+            border: 1.5px solid #e5ddd3;
+            border-radius: 16px;
+            padding: 10px 14px 12px;
+        }
+        .field:focus-within {
+            border-color: #3e6b5d;
+            box-shadow: 0 0 0 4px rgba(62, 107, 93, 0.14);
+        }
+        .field label {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #5c564e;
+        }
+        .field select, .field input {
+            width: 100%;
+            border: 0;
+            outline: none;
+            background: transparent;
+            color: #2a2622;
+            font-size: 18px;
+            font-weight: 600;
+            min-height: 32px;
+            padding: 0;
+        }
+        .field-inr input {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .field-inr input::placeholder { color: #b7b0a6; font-weight: 500; font-size: 18px; letter-spacing: 0; }
+        .bleed-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 52px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            border: 1.5px solid #f0b4c0;
+            background: #fffcf9;
+            color: #8f1d36;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.35;
+        }
+        .bleed-toggle input { width: 20px; height: 20px; accent-color: #8f1d36; flex: none; }
+        .bleed-toggle:has(input:checked) { background: #fdecef; border-color: #8f1d36; }
+        .btn-go {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 16px;
+            border: 0;
+            border-radius: 16px;
+            background: #3e6b5d;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .btn-go:hover { background: #345a4e; }
+        .btn-go:active { transform: scale(0.99); }
+        .as-flex .btn-go { margin-top: auto; }
+
+        .seg-bar {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            padding: 4px;
+            background: #f6f2ec;
+            border-radius: 16px;
+        }
+        .seg {
+            min-height: 44px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .seg:active { transform: scale(0.99); }
+        .seg-2 { background: #fff1e6; color: #9a3412; }
+        .seg-2.is-on { background: #c2410c; color: #fff; }
+        .seg-3 { background: #e7f3fb; color: #1e4e72; }
+        .seg-3.is-on { background: #0369a1; color: #fff; }
+        .seg-5 { background: #fde8ef; color: #8a2848; }
+        .seg-5.is-on { background: #be185d; color: #fff; }
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .pill-badge.seg-2 { border-color: #f0d2c0; }
+        .pill-badge.seg-3 { border-color: #c9e0f0; }
+        .pill-badge.seg-5 { border-color: #f3c9d6; }
+
+        .dose-row { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+        .twd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #eef5f2;
+            border-radius: 18px;
+            padding: 12px 14px;
+        }
+        .twd.alt { background: #f7f1ea; }
+        .twd-label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #5c564e; }
+        .twd-hint { display: none; margin-top: 4px; font-size: 12px; font-weight: 500; color: #5c564e; line-height: 1.4; text-transform: none; letter-spacing: 0; }
+        .twd-val { display: flex; align-items: baseline; gap: 6px; }
+        .twd input {
+            width: 5.6rem;
+            min-height: 48px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #2a2622;
+            background: #fffcf9;
+            border: 1.5px solid #d5e4de;
+            border-radius: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+        .twd.alt input { border-color: #eadfd2; }
+        .twd input:focus { outline: none; border-color: #3e6b5d; box-shadow: 0 0 0 4px rgba(62, 107, 93, 0.14); }
+        .twd-unit { font-size: 12px; font-weight: 600; color: #5c564e; }
+        .week {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+            min-width: 0;
+        }
+        .day-card {
+            background: #fffcf9;
+            border: 1px solid #e5ddd3;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .day-card.is-changed {
+            background: #f3faf6;
+            border-color: #3e6b5d;
+            box-shadow: inset 0 0 0 1px #3e6b5d;
+        }
+        .day-h { font-size: 11px; font-weight: 600; text-align: center; padding: 5px 0; line-height: 1.2; }
+        .d0 { background: #f3e6c4; color: #6b5420; }
+        .d1 { background: #f6dde3; color: #7a4452; }
+        .d2 { background: #dceee4; color: #1f5c48; }
+        .d3 { background: #f8e4d4; color: #7a4a28; }
+        .d4 { background: #dceaf3; color: #1e4f70; }
+        .d5 { background: #e6e0f2; color: #4a3d68; }
+        .d6 { background: #f6d6d8; color: #7a3040; }
+        .day-body {
+            padding: 8px 1px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 52px;
+        }
+        .day-dose {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2a2622;
+            font-variant-numeric: tabular-nums;
+        }
+        .day-card.is-changed .day-dose { color: #145c45; }
+        .day-actions { display: flex; flex-direction: column; width: 100%; margin-top: auto; border-top: 1px solid #efe8df; background: #faf7f3; }
+        .day-btn {
+            flex: 1 1 auto;
+            min-height: 44px;
+            border: 0;
+            background: transparent;
+            color: #3e6b5d;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1;
+        }
+        .day-btn + .day-btn { border-top: 1px solid #efe8df; }
+        .day-btn:active { background: #e7f2ee; }
+
+        .badge-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .pct-badge, .range-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .pct-badge.is-up, .range-badge.is-in { background: #e8f5ee; color: #145c45; border-color: #b7d7c6; }
+        .pct-badge.is-down, .range-badge.is-out { background: #fff0e6; color: #8a3b12; border-color: #f0c2a2; }
+        .pct-badge.is-flat, .range-badge.is-none { background: #fffcf9; color: #5c564e; border-color: #e5ddd3; }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip, .btn-quiet {
+            min-height: 40px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid #e5ddd3;
+            background: #fffcf9;
+            color: #2a2622;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .chip:active, .btn-quiet:active { transform: scale(0.98); }
+        .chip-2 { background: #fff1e6; color: #9a3412; border-color: #f0d2c0; }
+        .chip-3 { background: #e7f3fb; color: #1e4e72; border-color: #c9e0f0; }
+        .chip-5 { background: #fde8ef; color: #8a2848; border-color: #f3c9d6; }
+        .btn-quiet.is-copied { background: #e8f5ee; border-color: #b7d7c6; color: #145c45; }
+
+        .status-banner {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            border-radius: 20px;
+            padding: 16px 16px 16px 14px;
+            border: 1px solid transparent;
+            border-left-width: 6px;
+        }
+        .status-banner.is-low { background: #fff6e4; border-color: #e7c98a; color: #7a4b08; }
+        .status-banner.is-ok { background: #e8f5ee; border-color: #9dceb6; color: #145c45; }
+        .status-banner.is-high { background: #fff0e6; border-color: #f0c2a2; color: #8a3b12; }
+        .status-banner.is-critical { background: #fdecef; border-color: #e89aab; color: #8f1d36; }
+        .status-banner.is-bleed { background: #fde8ec; border-color: #b4233c; color: #7f1d32; }
+        .status-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+        .status-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 252, 249, 0.78);
+            font-size: 22px;
+            flex: none;
+        }
+        .status-main h3 { font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+        .status-main p { margin-top: 2px; font-size: 14px; font-weight: 500; line-height: 1.45; }
+        .status-range {
+            background: rgba(255, 252, 249, 0.88);
+            border: 1px solid currentColor;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .follow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 44px;
+            padding: 4px 10px 4px 12px;
+            border-radius: 14px;
+            border: 1.5px solid #e5ddd3;
+            background: #fffcf9;
+            color: #2a2622;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .follow input {
+            width: 3.25rem;
+            min-height: 34px;
+            text-align: center;
+            border: 0;
+            border-radius: 8px;
+            background: #f6f2ec;
+            color: #2a2622;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .follow input:focus { outline: none; box-shadow: 0 0 0 3px rgba(62, 107, 93, 0.18); }
+        .disp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 4px 0 12px; }
+        .disp { border-radius: 18px; padding: 14px 6px 12px; text-align: center; border: 1px solid transparent; }
+        .disp .dot { width: 16px; height: 16px; border-radius: 99px; margin: 0 auto 8px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.7); }
+        .disp .mg { font-size: 13px; font-weight: 600; }
+        .disp .n { font-size: 30px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+        .disp .u { font-size: 12px; font-weight: 600; }
+        .disp.d2 { background: #fff1e6; border-color: #f0d2c0; color: #9a3412; }
+        .disp.d3 { background: #e7f3fb; border-color: #c9e0f0; color: #1e4e72; }
+        .disp.d5 { background: #fde8ef; border-color: #f3c9d6; color: #8a2848; }
+        .disp.d2 .dot { background: linear-gradient(135deg, #fb923c, #ea580c); }
+        .disp.d3 .dot { background: linear-gradient(135deg, #38bdf8, #2563eb); }
+        .disp.d5 .dot { background: linear-gradient(135deg, #f472b6, #e11d48); }
+        .hint {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5c564e;
+            background: #f6f2ec;
+            border-radius: 12px;
+            padding: 8px 10px;
+            line-height: 1.45;
+        }
+        .as-flex .hint { margin-top: auto; }
+        .note {
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: 220px;
+            resize: vertical;
+            border: 1.5px solid #e5ddd3;
+            border-radius: 16px;
+            background: #fffcf9;
+            color: #2a2622;
+            padding: 14px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .note:focus { outline: none; border-color: #3e6b5d; box-shadow: 0 0 0 4px rgba(62, 107, 93, 0.14); }
+
+        .modal-back {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            padding: 16px;
+            background: rgba(42, 38, 34, 0.38);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-back.hidden { display: none; }
+        .modal-back:not(.hidden) { display: flex; }
+        .modal-card {
+            width: min(100%, 440px);
+            background: #fffcf9;
+            border: 1px solid #e5ddd3;
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 24px 60px rgba(60, 40, 20, 0.16);
+        }
+        .modal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+        .modal-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .modal-id img { width: 52px; height: 52px; border-radius: 16px; flex: none; }
+        .modal-id h3 { font-size: 1rem; font-weight: 700; }
+        .modal-id p { margin-top: 2px; font-size: 12px; font-weight: 500; color: #5c564e; line-height: 1.4; }
+        .icon-x {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 999px;
+            background: #f4f1ec;
+            color: #5c564e;
+            font-size: 16px;
+            flex: none;
+        }
+        .modal-body { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+        .help { border-radius: 16px; padding: 12px 14px; color: #2a2622; font-size: 13px; line-height: 1.5; }
+        .help h4 { font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+        .help ol { margin: 0; padding-left: 1.25rem; list-style: decimal; }
+        .help li + li { margin-top: 4px; }
+        .help-ios { background: #f8f1ea; }
+        .help-and { background: #eef5f2; }
+        #resultSection { scroll-margin-top: 132px; }
+        #resultSection.flex { animation: fadeUp 0.35s ease; }
+
+        @media (min-width: 640px) {
+            .header-actions { width: auto; display: flex; }
+            .card { padding: 22px; border-radius: 28px; }
+            .twd-hint { display: block; }
+            .dose-row { flex-direction: row; align-items: flex-start; }
+            .twd { width: 11.5rem; flex-direction: column; justify-content: center; text-align: center; align-items: center; }
+            .week { gap: 8px; }
+            .day-dose { font-size: 18px; }
+            .day-actions { flex-direction: row; }
+            .day-btn { min-height: 44px; font-size: 20px; }
+            .day-btn + .day-btn { border-top: 0; border-left: 1px solid #efe8df; }
+            .status-banner { flex-direction: row; align-items: center; justify-content: space-between; padding: 18px 18px 18px 16px; }
+            #resultSection { scroll-margin-top: 84px; }
+            .status-range { flex: none; max-width: 48%; }
+        }
+        @media (min-width: 768px) {
+            .legend { display: flex; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
     </style>
 </head>
-<body class="text-slate-700 min-h-screen flex flex-col relative">
-
-    <!-- Decorative Colorful Blobs -->
-    <div class="fixed top-[-10%] left-[-10%] w-72 sm:w-96 h-72 sm:h-96 bg-indigo-300/25 rounded-full blur-3xl pointer-events-none z-0"></div>
-    <div class="fixed top-[25%] right-[-10%] w-72 sm:w-96 h-72 sm:h-96 bg-pink-300/20 rounded-full blur-3xl pointer-events-none z-0"></div>
-
-    <!-- Mobile-Proportioned Header -->
-    <header class="safe-header bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-md shadow-indigo-500/15 sticky top-0 z-50 w-full">
-        <div class="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
-            <!-- Left: App Icon & Title -->
-            <div class="flex items-center gap-2.5 min-w-0">
-                <img id="headerAppIcon" alt="App Icon" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/40 shadow-sm shrink-0">
-                <div class="truncate">
-                    <div class="flex items-center gap-1.5">
-                        <h1 class="text-sm sm:text-lg font-bold tracking-tight text-white truncate">Warfarin Rx</h1>
-                        <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-300 text-amber-950 shadow-sm shrink-0">Smart</span>
-                    </div>
-                    <p class="text-[10px] text-indigo-100 truncate">คำนวณและปรับขนาดยา Warfarin</p>
+<body>
+    <header class="site-header">
+        <div class="header-inner mx-auto w-full max-w-6xl px-3 sm:px-6">
+            <div class="brand">
+                <img src="icons/apple-touch-icon.png" alt="">
+                <div class="min-w-0">
+                    <h1>Warfarin</h1>
+                    <p>คำนวณและปรับขนาดยา Warfarin</p>
                 </div>
             </div>
-
-            <!-- Right: Compact Action Buttons -->
-            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                <div class="hidden md:flex items-center gap-2.5 text-xs font-semibold bg-white/15 backdrop-blur-md px-3 py-1 rounded-full border border-white/25 text-white">
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-400 border border-white inline-block"></span>2mg</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 border border-white inline-block"></span>3mg</span>
-                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-400 border border-white inline-block"></span>5mg</span>
-                </div>
-
-                <button onclick="toggleInstallModal(true)" class="text-[11px] sm:text-xs font-bold text-indigo-950 bg-amber-300 hover:bg-amber-200 px-2.5 sm:px-3 py-1.5 rounded-xl smooth active:scale-95 shadow-sm flex items-center gap-1">
-                    <span>📲</span>
-                    <span class="hidden xs:inline sm:inline">ติดตั้งแอป</span>
-                </button>
-
-                <button onclick="location.reload()" title="ล้างค่า" class="text-[11px] sm:text-xs font-bold text-white bg-white/20 hover:bg-rose-500 border border-white/30 px-2.5 sm:px-3 py-1.5 rounded-xl smooth active:scale-95 shadow-sm flex items-center gap-1">
-                    <span>🔄</span>
-                    <span class="hidden sm:inline">ล้างค่า</span>
-                </button>
+            <div class="legend" aria-hidden="true">
+                <span><i class="ld ld2"></i>2mg</span>
+                <span><i class="ld ld3"></i>3mg</span>
+                <span><i class="ld ld5"></i>5mg</span>
+            </div>
+            <div class="header-actions">
+                <button type="button" onclick="toggleInstallModal(true)" class="header-btn primary">ติดตั้งแอป</button>
+                <button type="button" onclick="location.reload()" title="ล้างค่า" class="header-btn">ล้างค่า</button>
             </div>
         </div>
     </header>
 
-    <!-- Modal แนะนำวิธี Add to Home Screen -->
-    <div id="installModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-indigo-100 animate-fade-up">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3.5">
-                <div class="flex items-center gap-3">
-                    <img id="modalAppIcon" alt="Warfarin Rx Icon" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl shadow-md border border-slate-200 shrink-0">
+    <div id="installModal" class="modal-back hidden">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+            <div class="modal-top">
+                <div class="modal-id">
+                    <img src="icons/apple-touch-icon.png" alt="Warfarin">
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">ติดตั้งแอป Warfarin Rx</h3>
-                        <p class="text-[11px] sm:text-xs text-slate-500">เปิดใช้งานเต็มจอเหมือนแอปจริง ไม่มีแถบ URL</p>
+                        <h3 id="installTitle">ติดตั้งแอป Warfarin</h3>
+                        <p>เปิดใช้งานเต็มจอเหมือนแอปจริง ไม่มีแถบ URL</p>
                     </div>
                 </div>
-                <button onclick="toggleInstallModal(false)" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-sm shrink-0">✕</button>
+                <button type="button" onclick="toggleInstallModal(false)" class="icon-x" aria-label="ปิด">✕</button>
             </div>
-
-            <div class="space-y-3 my-4 text-xs text-slate-600">
-                <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3.5">
-                    <div class="font-bold text-indigo-900 mb-1">🍎 สำหรับ iPhone / iPad (เปิดด้วย Safari)</div>
-                    <ol class="list-decimal list-inside space-y-1 text-indigo-950/80">
+            <div class="modal-body">
+                <div class="help help-ios">
+                    <h4>🍎 สำหรับ iPhone / iPad (เปิดด้วย Safari)</h4>
+                    <ol>
                         <li>กดปุ่ม <b>แชร์ (Share)</b> ด้านล่างหน้าจอ</li>
                         <li>เลือก <b>"เพิ่มไปยังหน้าจอโฮม" (Add to Home Screen)</b></li>
                         <li>กด <b>เพิ่ม (Add)</b> ที่มุมขวาบน</li>
                     </ol>
                 </div>
-
-                <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-3.5">
-                    <div class="font-bold text-emerald-900 mb-1">🤖 สำหรับ Android (เปิดด้วย Chrome)</div>
-                    <ol class="list-decimal list-inside space-y-1 text-emerald-950/80">
+                <div class="help help-and">
+                    <h4>🤖 สำหรับ Android (เปิดด้วย Chrome)</h4>
+                    <ol>
                         <li>กดปุ่มเมนู <b>จุด 3 จุด (⋮)</b> มุมขวาบนของ Chrome</li>
                         <li>เลือก <b>"เพิ่มลงในหน้าจอหลัก"</b> หรือ <b>"ติดตั้งแอป"</b></li>
                     </ol>
                 </div>
             </div>
-
-            <button onclick="toggleInstallModal(false)" class="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-sm shadow-md">
-                เข้าใจแล้ว
-            </button>
+            <button type="button" onclick="toggleInstallModal(false)" class="btn-go" style="margin-top:0">เข้าใจแล้ว</button>
         </div>
     </div>
 
-    <main class="flex-grow max-w-6xl mx-auto px-2.5 sm:px-6 py-4 sm:py-7 w-full space-y-4 sm:space-y-6 relative z-10">
-
-        <!-- STEP 1 & 2: INPUTS -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
-            
-            <!-- STEP 1: Target & Current INR -->
-            <div class="lg:col-span-4 bg-gradient-to-br from-emerald-50 via-teal-50/90 to-cyan-100/80 border-2 border-teal-200/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
-                <div class="space-y-3.5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">1</span>
-                            <h2 class="font-bold text-teal-950 text-sm sm:text-base">เป้าหมาย & ค่า INR</h2>
-                        </div>
-                        <span class="text-[10px] sm:text-xs font-bold text-teal-700 bg-teal-100/90 border border-teal-200 px-2.5 py-0.5 rounded-full">Lab Result</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
-                        <div class="bg-white/95 border-2 border-emerald-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-emerald-400 shadow-sm smooth">
-                            <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Target INR</label>
-                            <select id="targetInr" class="w-full bg-transparent font-bold text-xs sm:text-sm text-emerald-950 focus:outline-none cursor-pointer">
-                                <option value="2.0-3.0">2.0 - 3.0</option>
-                                <option value="2.5-3.5">2.5 - 3.5 (MHV)</option>
-                            </select>
-                        </div>
-
-                        <div class="bg-white/95 border-2 border-teal-200 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-teal-400 shadow-sm smooth">
-                            <label class="block text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-1">Current INR</label>
-                            <input type="number" id="currentInr" step="0.1" inputmode="decimal" placeholder="เช่น 3.2" class="w-full bg-transparent font-black text-lg sm:text-xl text-teal-700 placeholder:text-slate-300 placeholder:font-normal focus:outline-none">
-                        </div>
-
-                        <label class="col-span-2 flex items-center gap-2.5 bg-white/95 border-2 border-rose-300 rounded-2xl px-3 py-2.5 cursor-pointer shadow-sm">
-                            <input type="checkbox" id="majorBleeding" class="w-4 h-4 accent-rose-600 shrink-0">
-                            <span class="text-[11px] sm:text-xs font-bold text-rose-900 leading-snug">มีเลือดออกรุนแรง (major bleeding)</span>
-                        </label>
+    <main class="mx-auto w-full max-w-6xl px-3 sm:px-6 py-5 sm:py-8">
+        <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12 lg:gap-6">
+            <section class="card as-flex lg:col-span-4">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="step-num">1</span>
+                        <h2>เป้าหมาย &amp; ค่า INR</h2>
                     </div>
                 </div>
-
-                <button onclick="calculateDose()" class="w-full mt-4 py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white font-bold text-sm shadow-md shadow-teal-500/20 smooth active:scale-[0.98] flex items-center justify-center gap-2">
-                    <span>⚡ ประมวลผลการปรับยา</span>
-                </button>
-            </div>
-
-            <!-- STEP 2: Current Dose Grid -->
-            <div class="lg:col-span-8 bg-gradient-to-br from-indigo-50 via-blue-50/90 to-violet-100/80 border-2 border-indigo-200/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between space-y-3.5">
-                <!-- Title & Base Pill Selector -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    <div class="flex items-center justify-between sm:justify-start gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">2</span>
-                            <h2 class="font-bold text-indigo-950 text-sm sm:text-base">ขนาดยาเดิม (Current Dose)</h2>
-                        </div>
-                        <span id="currentBasePillBadge" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300">
-                            เม็ด 3 mg (±1.5)
-                        </span>
+                <div class="stack">
+                    <div class="field">
+                        <label for="targetInr">Target INR</label>
+                        <select id="targetInr">
+                            <option value="2.0-3.0">2.0 - 3.0</option>
+                            <option value="2.5-3.5">2.5 - 3.5 (MHV)</option>
+                        </select>
                     </div>
+                    <div class="field field-inr">
+                        <label for="currentInr">Current INR</label>
+                        <input type="number" id="currentInr" step="0.1" inputmode="decimal" placeholder="เช่น 3.2">
+                    </div>
+                    <label class="bleed-toggle">
+                        <input type="checkbox" id="majorBleeding">
+                        <span>มีเลือดออกรุนแรง (major bleeding)</span>
+                    </label>
+                </div>
+                <button type="button" onclick="calculateDose()" class="btn-go">ประมวลผลการปรับยา</button>
+            </section>
 
-                    <!-- Pill Selector Bar (Full width on mobile) -->
-                    <div class="grid grid-cols-3 sm:flex items-center gap-1.5 bg-white/90 p-1 rounded-xl border border-indigo-200/80 shadow-sm">
-                        <button onclick="setBasePillCurrent(2)" id="btnBase2" class="py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-orange-100 text-orange-700 border border-orange-200 smooth text-center">เม็ด 2 mg</button>
-                        <button onclick="setBasePillCurrent(3)" id="btnBase3" class="py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-sky-500 text-white border border-sky-600 shadow-sm smooth text-center">เม็ด 3 mg</button>
-                        <button onclick="setBasePillCurrent(5)" id="btnBase5" class="py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-pink-100 text-pink-700 border border-pink-200 smooth text-center">เม็ด 5 mg</button>
+            <section class="card lg:col-span-8">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="step-num">2</span>
+                        <h2>ขนาดยาเดิม (Current Dose)</h2>
+                        <span id="currentBasePillBadge" class="pill-badge seg-3">เม็ด 3 mg (±1.5)</span>
                     </div>
                 </div>
-
-                <!-- TWD Box + 7-Day Grid -->
-                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-                    <!-- Total / Week Box (Horizontal bar on mobile, Vertical box on desktop) -->
-                    <div class="sm:w-40 bg-gradient-to-r sm:bg-gradient-to-b from-indigo-600 to-blue-700 text-white rounded-2xl px-4 py-2.5 sm:p-4 flex flex-row sm:flex-col items-center justify-between sm:justify-center text-left sm:text-center shrink-0 shadow-sm">
+                <div class="seg-bar" style="margin-bottom:14px">
+                    <button type="button" onclick="setBasePillCurrent(2)" id="btnBase2" class="seg seg-2">เม็ด 2 mg</button>
+                    <button type="button" onclick="setBasePillCurrent(3)" id="btnBase3" class="seg seg-3 is-on">เม็ด 3 mg</button>
+                    <button type="button" onclick="setBasePillCurrent(5)" id="btnBase5" class="seg seg-5">เม็ด 5 mg</button>
+                </div>
+                <div class="dose-row">
+                    <div class="twd">
                         <div>
-                            <span class="text-[10px] font-bold text-indigo-100 uppercase tracking-wider block">ยาเดิมรวม (TWD)</span>
-                            <span class="text-[10px] text-indigo-200 hidden sm:block mt-1 leading-tight">พิมพ์เลข เช่น 12, 18, 24<br>จัดเม็ดสีเดียวอัตโนมัติ</span>
+                            <div class="twd-label">ยาเดิมรวม (TWD)</div>
+                            <div class="twd-hint">พิมพ์เลข เช่น 12, 18, 24<br>จัดเม็ดสีเดียวอัตโนมัติ</div>
                         </div>
-                        <div class="flex items-baseline gap-1 sm:mt-1.5">
-                            <input type="number" id="manualCurrentTWD" step="0.5" min="0" inputmode="decimal" onchange="applyManualTWD(this.value)" class="w-16 sm:w-20 text-center text-xl sm:text-2xl font-black text-indigo-900 bg-white rounded-xl border-2 border-indigo-200 focus:border-amber-300 focus:outline-none py-0.5 shadow-inner">
-                            <span class="text-xs font-bold text-indigo-100">mg/wk</span>
+                        <div class="twd-val">
+                            <input type="number" id="manualCurrentTWD" step="0.5" min="0" inputmode="decimal" onchange="applyManualTWD(this.value)">
+                            <span class="twd-unit">mg/wk</span>
                         </div>
                     </div>
-
-                    <!-- 7-Day Grid -->
-                    <div class="flex-1 grid grid-cols-7 gap-1 sm:gap-2" id="currentScheduleGrid"></div>
+                    <div class="week" id="currentScheduleGrid"></div>
                 </div>
-            </div>
-
+            </section>
         </div>
 
-        <!-- RESULTS SECTION -->
-        <div id="resultSection" class="hidden flex-col space-y-4 sm:space-y-6 animate-fade-up">
-
-            <!-- Clinical Status Banner -->
-            <div id="alertBox" class="rounded-2xl p-3.5 sm:p-5 border-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm smooth">
-                <div class="flex items-center gap-3">
-                    <div id="alertIcon" class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl sm:text-2xl shrink-0"></div>
+        <div id="resultSection" class="mt-4 hidden flex-col gap-4 sm:mt-6 sm:gap-6">
+            <div id="alertBox" class="status-banner is-ok">
+                <div class="status-main">
+                    <div id="alertIcon" class="status-icon"></div>
                     <div>
-                        <h3 id="alertTitle" class="font-bold text-sm sm:text-lg leading-snug"></h3>
-                        <p id="alertDesc" class="text-xs sm:text-sm font-semibold opacity-90"></p>
+                        <h3 id="alertTitle"></h3>
+                        <p id="alertDesc"></p>
                     </div>
                 </div>
-                <div id="pctRule" class="w-full sm:w-auto text-center text-xs font-bold px-3.5 py-1.5 sm:py-2 rounded-xl bg-white shadow-sm border-2"></div>
+                <div id="pctRule" class="status-range"></div>
             </div>
 
-            <!-- STEP 3: Smart Regimen -->
-            <div class="bg-gradient-to-br from-violet-100/90 via-purple-50 to-fuchsia-100/90 border-2 border-violet-300/80 rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-violet-200/70">
-                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">3</span>
-                        <h2 class="font-bold text-violet-950 text-sm sm:text-base">ปรับขนาดยาใหม่</h2>
-                        <span id="newBasePillBadge" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-violet-800 border border-violet-300"></span>
-                        <span id="newPctBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-sm">0.0%</span>
-                        <span id="rangeStatusBadge" class="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border shadow-sm"></span>
+            <section class="card">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="step-num">3</span>
+                        <h2>ปรับขนาดยาใหม่</h2>
                     </div>
-
-                    <div class="flex flex-wrap items-center justify-between sm:justify-end gap-1.5">
-                        <button onclick="copyFromCurrentDose()" class="text-[11px] sm:text-xs font-bold text-violet-800 bg-white hover:bg-violet-600 hover:text-white border border-violet-300 px-2.5 py-1.5 rounded-xl smooth active:scale-95 shadow-sm">
-                            📋 คัดลอกยาเดิม
-                        </button>
-                        <div class="flex items-center gap-1 bg-white/90 p-1 rounded-xl border border-violet-200 shadow-sm">
-                            <button onclick="quickFillNew(0)" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-slate-100 text-slate-600">Hold</button>
-                            <button onclick="setBasePillNew(2)" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-orange-100 text-orange-700">2mg</button>
-                            <button onclick="setBasePillNew(3)" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-sky-100 text-sky-700">3mg</button>
-                            <button onclick="setBasePillNew(5)" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-pink-100 text-pink-700">5mg</button>
-                        </div>
+                    <div class="badge-row">
+                        <span id="newBasePillBadge" class="pill-badge seg-3"></span>
+                        <span id="newPctBadge" class="pct-badge is-flat">0.0%</span>
+                        <span id="rangeStatusBadge" class="range-badge"></span>
                     </div>
                 </div>
-
-                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-                    <!-- New Total / Week Box -->
-                    <div class="sm:w-40 bg-gradient-to-r sm:bg-gradient-to-b from-violet-600 to-fuchsia-600 text-white rounded-2xl px-4 py-2.5 sm:p-4 flex flex-row sm:flex-col items-center justify-between sm:justify-center text-left sm:text-center shrink-0 shadow-sm">
+                <div class="toolbar">
+                    <button type="button" onclick="copyFromCurrentDose()" class="btn-quiet">📋 คัดลอกยาเดิม</button>
+                    <div class="chips">
+                        <button type="button" onclick="quickFillNew(0)" class="chip">Hold</button>
+                        <button type="button" onclick="setBasePillNew(2)" class="chip chip-2">2mg</button>
+                        <button type="button" onclick="setBasePillNew(3)" class="chip chip-3">3mg</button>
+                        <button type="button" onclick="setBasePillNew(5)" class="chip chip-5">5mg</button>
+                    </div>
+                </div>
+                <div class="dose-row">
+                    <div class="twd alt">
                         <div>
-                            <span class="text-[10px] font-bold text-violet-100 uppercase tracking-wider block">ยาใหม่รวม (TWD)</span>
-                            <span class="text-[10px] text-violet-100 hidden sm:block mt-1 leading-tight">พิมพ์ TWD หรือกด +/-<br>ตามขนาดเม็ดยาได้ทันที</span>
+                            <div class="twd-label">ยาใหม่รวม (TWD)</div>
+                            <div class="twd-hint">พิมพ์ TWD หรือกด +/-<br>ตามขนาดเม็ดยาได้ทันที</div>
                         </div>
-                        <div class="flex items-baseline gap-1 sm:mt-1.5">
-                            <input type="number" id="manualNewTWD" step="0.5" min="0" inputmode="decimal" onchange="applyManualNewTWD(this.value)" class="w-16 sm:w-20 text-center text-xl sm:text-2xl font-black text-violet-900 bg-white rounded-xl border-2 border-violet-200 focus:border-amber-300 focus:outline-none py-0.5 shadow-inner">
-                            <span class="text-xs font-bold text-violet-100">mg/wk</span>
+                        <div class="twd-val">
+                            <input type="number" id="manualNewTWD" step="0.5" min="0" inputmode="decimal" onchange="applyManualNewTWD(this.value)">
+                            <span class="twd-unit">mg/wk</span>
                         </div>
                     </div>
-
-                    <!-- 7-Day New Schedule Grid -->
-                    <div class="flex-1 grid grid-cols-7 gap-1 sm:gap-2" id="newScheduleGrid"></div>
+                    <div class="week" id="newScheduleGrid"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- STEP 4 & 5: Dispensing & Pharmacist Note -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-                
-                <!-- STEP 4: Dispense Pills Card -->
-                <div class="lg:col-span-5 bg-gradient-to-br from-sky-50 via-cyan-50/90 to-blue-100/80 border-2 border-sky-200/80 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between pb-3 border-b border-sky-200/70">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">4</span>
-                            <h2 class="font-bold text-sky-950 text-sm sm:text-base">จำนวนยาที่จ่าย</h2>
+            <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12 lg:gap-6">
+                <section class="card as-flex lg:col-span-5">
+                    <div class="card-head">
+                        <div class="card-title">
+                            <span class="step-num">4</span>
+                            <h2>จำนวนยาที่จ่าย</h2>
                         </div>
-
-                        <div class="flex items-center gap-1.5 bg-white border-2 border-sky-200 px-2.5 py-1 rounded-xl shadow-sm">
-                            <span class="text-xs font-bold text-sky-700">นัด</span>
-                            <input type="number" id="followUpDays" value="28" min="1" inputmode="numeric" oninput="onFollowUpDaysChange()" class="w-11 text-center font-black text-sm text-sky-700 bg-sky-50 rounded-lg border border-sky-300 py-0.5 focus:outline-none">
-                            <span class="text-xs font-bold text-sky-700">วัน</span>
+                        <div class="follow">
+                            <span>นัด</span>
+                            <input type="number" id="followUpDays" value="28" min="1" inputmode="numeric" oninput="onFollowUpDaysChange()">
+                            <span>วัน</span>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-3 gap-2.5 sm:gap-3 my-auto py-4">
-                        <div class="bg-gradient-to-b from-orange-100/90 to-amber-50 border-2 border-orange-300/80 rounded-2xl p-3 text-center shadow-sm">
-                            <div class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border-2 border-white mx-auto mb-1.5 shadow"></div>
-                            <div class="text-[11px] font-bold text-orange-900">2 mg</div>
-                            <div class="text-2xl font-black text-orange-600 mt-0.5" id="dispenseD2">0</div>
-                            <div class="text-[10px] text-orange-700 font-bold">เม็ด</div>
+                    <div class="disp-grid">
+                        <div class="disp d2">
+                            <div class="dot"></div>
+                            <div class="mg">2 mg</div>
+                            <div class="n" id="dispenseD2">0</div>
+                            <div class="u">เม็ด</div>
                         </div>
-
-                        <div class="bg-gradient-to-b from-sky-100/90 to-blue-50 border-2 border-sky-300/80 rounded-2xl p-3 text-center shadow-sm">
-                            <div class="w-5 h-5 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 border-2 border-white mx-auto mb-1.5 shadow"></div>
-                            <div class="text-[11px] font-bold text-sky-900">3 mg</div>
-                            <div class="text-2xl font-black text-sky-600 mt-0.5" id="dispenseD3">0</div>
-                            <div class="text-[10px] text-sky-700 font-bold">เม็ด</div>
+                        <div class="disp d3">
+                            <div class="dot"></div>
+                            <div class="mg">3 mg</div>
+                            <div class="n" id="dispenseD3">0</div>
+                            <div class="u">เม็ด</div>
                         </div>
-
-                        <div class="bg-gradient-to-b from-pink-100/90 to-rose-50 border-2 border-pink-300/80 rounded-2xl p-3 text-center shadow-sm">
-                            <div class="w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 border-2 border-white mx-auto mb-1.5 shadow"></div>
-                            <div class="text-[11px] font-bold text-pink-900">5 mg</div>
-                            <div class="text-2xl font-black text-pink-600 mt-0.5" id="dispenseD5">0</div>
-                            <div class="text-[10px] text-pink-700 font-bold">เม็ด</div>
+                        <div class="disp d5">
+                            <div class="dot"></div>
+                            <div class="mg">5 mg</div>
+                            <div class="n" id="dispenseD5">0</div>
+                            <div class="u">เม็ด</div>
                         </div>
                     </div>
+                    <div class="hint">✨ ปัดเศษครึ่งเม็ดเป็นจำนวนเม็ดเต็มให้อัตโนมัติ</div>
+                </section>
 
-                    <div class="text-[11px] font-semibold text-sky-800 text-center bg-white/80 border border-sky-200/80 rounded-xl py-1.5 px-3">
-                        ✨ ปัดเศษครึ่งเม็ดเป็นจำนวนเม็ดเต็มให้อัตโนมัติ
-                    </div>
-                </div>
-
-                <!-- STEP 5: Pharmacist Note Card -->
-                <div class="lg:col-span-7 bg-gradient-to-br from-amber-50 via-orange-50/80 to-rose-50/80 border-2 border-amber-200/90 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col">
-                    <div class="flex items-center justify-between pb-3 border-b border-amber-200/70 mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">5</span>
-                            <h2 class="font-bold text-amber-950 text-sm sm:text-base">Pharmacist Note</h2>
+                <section class="card as-flex lg:col-span-7">
+                    <div class="card-head">
+                        <div class="card-title">
+                            <span class="step-num">5</span>
+                            <h2>Pharmacist Note</h2>
                         </div>
-                        <button onclick="copyNote(event)" class="text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-3.5 py-1.5 rounded-xl smooth active:scale-95 flex items-center gap-1 shadow-sm">
-                            📋 คัดลอก Note
-                        </button>
+                        <button type="button" onclick="copyNote(event)" class="btn-quiet">📋 คัดลอก Note</button>
                     </div>
-
-                    <textarea id="clinicalNote" class="w-full flex-grow min-h-[210px] text-xs sm:text-[13px] text-slate-800 bg-white/95 focus:bg-white p-3.5 sm:p-4 rounded-2xl border-2 border-amber-200/80 focus:border-amber-400 focus:outline-none resize-none font-mono leading-relaxed shadow-inner smooth"></textarea>
-                </div>
-
+                    <textarea id="clinicalNote" class="note"></textarea>
+                </section>
             </div>
         </div>
     </main>
 
     <script>
         const daysLabel = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
-        const dayColors = [
-            'bg-amber-300/90 text-amber-950',     // จ. เหลือง
-            'bg-pink-300/90 text-pink-950',       // อ. ชมพู
-            'bg-emerald-300/90 text-emerald-950', // พ. เขียว
-            'bg-orange-300/90 text-orange-950',   // พฤ. ส้ม
-            'bg-sky-300/90 text-sky-950',         // ศ. ฟ้า
-            'bg-purple-300/90 text-purple-950',   // ส. ม่วง
-            'bg-rose-400/90 text-white'           // อา. แดง
-        ];
+        const dayColors = ['d0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6'];
 
         let state = {
             currentDoses: [3, 3, 3, 3, 3, 3, 3], 
@@ -459,8 +788,6 @@
         };
 
         window.onload = () => {
-            document.getElementById('headerAppIcon').src = generatedAppIconUrl;
-            document.getElementById('modalAppIcon').src = generatedAppIconUrl;
             renderGridCurrent();
         };
 
@@ -585,26 +912,13 @@
             const p = state.currentBasePill;
             const step = getPillStep(p);
             const badge = document.getElementById('currentBasePillBadge');
-            const colors = {
-                2: 'bg-orange-100 text-orange-800 border-orange-300',
-                3: 'bg-sky-100 text-sky-800 border-sky-300',
-                5: 'bg-pink-100 text-pink-800 border-pink-300'
-            };
-            badge.className = `text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border ${colors[p] || colors[3]}`;
+            badge.className = `pill-badge seg-${p}`;
             badge.innerText = `เม็ด ${p} mg (±${step})`;
 
             [2, 3, 5].forEach(s => {
                 const btn = document.getElementById(`btnBase${s}`);
                 if (!btn) return;
-                if (s === p) {
-                    if (s === 2) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-orange-500 text-white border border-orange-600 shadow-sm smooth text-center";
-                    if (s === 3) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-sky-500 text-white border border-sky-600 shadow-sm smooth text-center";
-                    if (s === 5) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-pink-500 text-white border border-pink-600 shadow-sm smooth text-center";
-                } else {
-                    if (s === 2) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-orange-100 text-orange-700 border border-orange-200 smooth text-center";
-                    if (s === 3) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-sky-100 text-sky-700 border border-sky-200 smooth text-center";
-                    if (s === 5) btn.className = "py-1.5 sm:px-2.5 sm:py-1 text-xs font-bold rounded-lg bg-pink-100 text-pink-700 border border-pink-200 smooth text-center";
-                }
+                btn.className = `seg seg-${s}` + (s === p ? ' is-on' : '');
             });
         }
 
@@ -616,16 +930,15 @@
 
             state.currentDoses.forEach((dose, index) => {
                 grid.innerHTML += `
-                    <div class="bg-white/95 border border-indigo-200/80 rounded-xl sm:rounded-2xl overflow-hidden flex flex-col shadow-sm min-w-0">
-                        <div class="text-[10px] py-1 ${dayColors[index]} font-bold text-center">${daysLabel[index]}</div>
-                        <div class="py-2 flex flex-col items-center justify-center min-h-[50px] sm:min-h-[56px]">
-                            <span class="font-black text-xs sm:text-base text-slate-800 leading-none">${dose}</span>
-                            <div class="mt-1">${getPillUI(dose, state.currentBasePill)}</div>
+                    <div class="day-card">
+                        <div class="day-h ${dayColors[index]}">${daysLabel[index]}</div>
+                        <div class="day-body">
+                            <span class="day-dose">${dose}</span>
+                            <div class="day-pills">${getPillUI(dose, state.currentBasePill)}</div>
                         </div>
-                        <div class="flex border-t border-indigo-100 bg-indigo-50/70 mt-auto">
-                            <button title="ลดลง ${step} mg" onclick="adjustDoseCurrent(${index}, -1)" class="flex-1 text-indigo-600 active:bg-rose-100 py-1.5 text-xs sm:text-sm font-black smooth select-none">-</button>
-                            <div class="w-px bg-indigo-100"></div>
-                            <button title="เพิ่มขึ้น ${step} mg" onclick="adjustDoseCurrent(${index}, 1)" class="flex-1 text-indigo-600 active:bg-indigo-200 py-1.5 text-xs sm:text-sm font-black smooth select-none">+</button>
+                        <div class="day-actions">
+                            <button type="button" title="ลดลง ${step} mg" onclick="adjustDoseCurrent(${index}, -1)" class="day-btn">-</button>
+                            <button type="button" title="เพิ่มขึ้น ${step} mg" onclick="adjustDoseCurrent(${index}, 1)" class="day-btn">+</button>
                         </div>
                     </div>
                 `;
@@ -696,26 +1009,24 @@
             const actualPct = currentTWD > 0 ? ((newTWD - currentTWD) / currentTWD) * 100 : 0;
             const step = getPillStep(state.newBasePill);
 
-            document.getElementById('newBasePillBadge').innerText = `เม็ด ${state.newBasePill} mg (±${step})`;
+            const newBadge = document.getElementById('newBasePillBadge');
+            newBadge.innerText = `เม็ด ${state.newBasePill} mg (±${step})`;
+            newBadge.className = `pill-badge seg-${state.newBasePill}`;
 
             state.newDoses.forEach((dose, index) => {
                 const isChanged = dose !== state.currentDoses[index];
-                const cardStyle = isChanged 
-                    ? 'bg-amber-50 border-fuchsia-400 ring-1 ring-fuchsia-300' 
-                    : 'bg-white/95 border-violet-200/80';
-                const doseColor = isChanged ? 'text-fuchsia-700' : 'text-slate-800';
+                const cardStyle = isChanged ? 'day-card is-changed' : 'day-card';
 
                 grid.innerHTML += `
-                    <div class="${cardStyle} border rounded-xl sm:rounded-2xl overflow-hidden flex flex-col shadow-sm min-w-0">
-                        <div class="text-[10px] py-1 ${dayColors[index]} font-bold text-center">${daysLabel[index]}</div>
-                        <div class="py-2 flex flex-col items-center justify-center min-h-[50px] sm:min-h-[56px]">
-                            <span class="font-black text-xs sm:text-base ${doseColor} leading-none">${dose}</span>
-                            <div class="mt-1">${getPillUI(dose, state.newBasePill)}</div>
+                    <div class="${cardStyle}">
+                        <div class="day-h ${dayColors[index]}">${daysLabel[index]}</div>
+                        <div class="day-body">
+                            <span class="day-dose">${dose}</span>
+                            <div class="day-pills">${getPillUI(dose, state.newBasePill)}</div>
                         </div>
-                        <div class="flex border-t border-violet-100 bg-violet-50/70 mt-auto">
-                            <button title="ลดลง ${step} mg" onclick="adjustDoseNew(${index}, -1)" class="flex-1 text-violet-600 active:bg-rose-100 py-1.5 text-xs sm:text-sm font-black smooth select-none">-</button>
-                            <div class="w-px bg-violet-100"></div>
-                            <button title="เพิ่มขึ้น ${step} mg" onclick="adjustDoseNew(${index}, 1)" class="flex-1 text-violet-600 active:bg-violet-200 py-1.5 text-xs sm:text-sm font-black smooth select-none">+</button>
+                        <div class="day-actions">
+                            <button type="button" title="ลดลง ${step} mg" onclick="adjustDoseNew(${index}, -1)" class="day-btn">-</button>
+                            <button type="button" title="เพิ่มขึ้น ${step} mg" onclick="adjustDoseNew(${index}, 1)" class="day-btn">+</button>
                         </div>
                     </div>
                 `;
@@ -727,25 +1038,25 @@
             const pctBadge = document.getElementById('newPctBadge');
             pctBadge.innerText = `${pctSign}${actualPct.toFixed(1)}%`;
             if (actualPct > 0) {
-                pctBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-white bg-violet-600 border-violet-700';
+                pctBadge.className = 'pct-badge is-up';
             } else if (actualPct < 0) {
-                pctBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-white bg-amber-500 border-amber-600';
+                pctBadge.className = 'pct-badge is-down';
             } else {
-                pctBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-slate-600 bg-white border-slate-300';
+                pctBadge.className = 'pct-badge is-flat';
             }
 
             const rangeBadge = document.getElementById('rangeStatusBadge');
             if (!state.hasDoseRange) {
                 rangeBadge.innerText = 'ไม่มีกรอบ %';
-                rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-slate-700 bg-white border-slate-300';
+                rangeBadge.className = 'range-badge is-none';
             } else {
                 const inRange = newTWD >= state.minTargetTWD - 0.01 && newTWD <= state.maxTargetTWD + 0.01;
                 if (inRange) {
                     rangeBadge.innerText = '✓ อยู่ในกรอบแนะนำ';
-                    rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-emerald-800 bg-emerald-200/80 border-emerald-300';
+                    rangeBadge.className = 'range-badge is-in';
                 } else {
                     rangeBadge.innerText = `แนะนำ: ${state.minTargetTWD.toFixed(1)}-${state.maxTargetTWD.toFixed(1)} mg`;
-                    rangeBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border text-amber-900 bg-amber-200/90 border-amber-300';
+                    rangeBadge.className = 'range-badge is-out';
                 }
             }
         }
@@ -775,26 +1086,26 @@
         // in 1.5–1.9. On target 2.5–3.5, 4.5 is < 4.6 so it stays in 3.6–4.5.
         function inrBandRecommendation(target, inr) {
             const low = {
-                banner: "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300 text-amber-950",
-                pill: "text-amber-800 border-amber-300",
+                banner: "is-low",
+                pill: "is-low",
                 icon: "💡",
                 title: "INR ต่ำกว่าเป้าหมาย"
             };
             const ok = {
-                banner: "bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-300 text-emerald-950",
-                pill: "text-emerald-800 border-emerald-300",
+                banner: "is-ok",
+                pill: "is-ok",
                 icon: "✅",
                 title: "INR อยู่ในเป้าหมาย"
             };
             const high = {
-                banner: "bg-gradient-to-r from-orange-100 to-amber-100 border-orange-300 text-orange-950",
-                pill: "text-orange-800 border-orange-300",
+                banner: "is-high",
+                pill: "is-high",
                 icon: "⚠️",
                 title: "INR สูงกว่าเป้าหมาย"
             };
             const critical = {
-                banner: "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950",
-                pill: "text-rose-800 border-rose-300",
+                banner: "is-critical",
+                pill: "is-critical",
                 icon: "⚠️",
                 title: "INR สูงกว่าเป้าหมาย"
             };
@@ -832,8 +1143,8 @@
 
         function bleedingRecommendation() {
             return {
-                banner: "bg-gradient-to-r from-rose-100 to-pink-100 border-rose-300 text-rose-950",
-                pill: "text-rose-800 border-rose-300",
+                banner: "is-bleed",
+                pill: "is-bleed",
                 icon: "⚠️",
                 title: "มีเลือดออกรุนแรง (major bleeding)",
                 text: "Hold warfarin, Vitamin K1 10 mg slow IV plus FFP or PCC, may repeat Vitamin K1 every 12 hours",
@@ -883,7 +1194,7 @@
             setTimeout(() => rs.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 
             const alertBox = document.getElementById('alertBox');
-            alertBox.className = `rounded-2xl p-3.5 sm:p-5 border-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm smooth ${rec.banner}`;
+            alertBox.className = `status-banner ${rec.banner}`;
             document.getElementById('alertTitle').innerText = rec.title;
             document.getElementById('alertDesc').innerText = "แนะนำ: " + rec.text;
 
@@ -891,7 +1202,7 @@
             pctRule.innerText = rec.hasRange
                 ? `กรอบยาแนะนำ: ${state.minTargetTWD.toFixed(1)} - ${state.maxTargetTWD.toFixed(1)} mg/wk`
                 : 'ไม่มีกรอบปรับ %';
-            pctRule.className = `w-full sm:w-auto text-center text-xs font-bold px-3.5 py-1.5 sm:py-2 rounded-xl bg-white shadow-sm border-2 ${rec.pill}`;
+            pctRule.className = `status-range`;
             document.getElementById('alertIcon').innerText = rec.icon;
 
             refreshNewRegimenUI();
@@ -1179,15 +1490,14 @@ Target INR: ${targetInr} | Current INR: ${currentInr}
                 const btn = event.currentTarget;
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = '✅ คัดลอกแล้ว!';
-                btn.classList.replace('from-amber-500', 'from-emerald-500');
-                btn.classList.replace('to-orange-500', 'to-teal-500');
+                btn.classList.add('is-copied');
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
-                    btn.classList.replace('from-emerald-500', 'from-amber-500');
-                    btn.classList.replace('to-teal-500', 'to-orange-500');
+                    btn.classList.remove('is-copied');
                 }, 1800);
             });
         }
+    
     </script>
 </body>
 </html>
