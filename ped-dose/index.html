@@ -1026,7 +1026,7 @@
       state.prepConcMgMl = drug.defaultPrepConc || 20;
       state.prepTabsOverride = null;
       state.reconConcMgMl = drug.defaultReconConc || 100;
-      state.rxUnit = preferredRxUnit(buildRxUnitOptions(state.freqPerDay));
+      state.rxUnit = preferredRxUnit(drug, buildRxUnitOptions(state.freqPerDay));
 
       const pt = getPatient();
       if (!pt.valid) {
@@ -1100,8 +1100,12 @@
       ];
     }
 
-    function preferredRxUnit(options) {
-      if (options.some(u => u.val === 'ml_dose')) return 'ml_dose';
+    function isOralLiquidFormulation(drug) {
+      return !!(drug && drug.category === 'liquid');
+    }
+
+    function preferredRxUnit(drug, options) {
+      if (isOralLiquidFormulation(drug) && options.some(u => u.val === 'ml_dose')) return 'ml_dose';
       if (options.some(u => u.val === 'mg_dose')) return 'mg_dose';
       return options.length ? options[0].val : 'mg_dose';
     }
@@ -1254,7 +1258,7 @@
       const unitSelect = document.getElementById('rxUnitSelect');
       const units = buildRxUnitOptions(state.freqPerDay);
       if (!units.some(u => u.val === state.rxUnit)) {
-        state.rxUnit = preferredRxUnit(units);
+        state.rxUnit = preferredRxUnit(drug, units);
       }
       unitSelect.innerHTML = units.map(u => `<option value="${u.val}" ${u.val === state.rxUnit ? 'selected' : ''}>${u.label}</option>`).join('');
     }
