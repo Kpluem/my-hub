@@ -837,6 +837,13 @@
     // ============================================================================
     // 3. HELPERS & CALCULATIONS
     // ============================================================================
+    function readOptionalInt(raw, fallback) {
+      const text = String(raw ?? '').trim();
+      if (text === '') return fallback;
+      const value = parseInt(text, 10);
+      return Number.isFinite(value) ? value : fallback;
+    }
+
     function readWeightField(el) {
       if (!el) return { missing: true, invalid: false, value: NaN };
       const raw = String(el.value).trim();
@@ -861,9 +868,9 @@
       else if (w.value < 0.5 || w.value > 120) errors.push('น้ำหนักอยู่นอกช่วง 0.5–120 kg กรุณาตรวจสอบ');
       else weight = w.value;
 
-      const ageY = Math.max(0, parseInt(yEl ? yEl.value : 2) || 0);
-      const ageM = Math.max(0, parseInt(mEl ? mEl.value : 0) || 0);
-      const days = Math.max(1, parseInt(dEl ? dEl.value : 5) || 5);
+      const ageY = Math.max(0, readOptionalInt(yEl ? yEl.value : '2', 0));
+      const ageM = Math.max(0, readOptionalInt(mEl ? mEl.value : '0', 0));
+      const days = Math.max(1, readOptionalInt(dEl ? dEl.value : '5', 5));
       return { weight, ageY, ageM, totalMonths: (ageY * 12) + ageM, days, valid: errors.length === 0, errors };
     }
 
@@ -932,8 +939,10 @@
         if (regimen.maxDayMg) {
           minDayMg = Math.min(minDayMg, regimen.maxDayMg);
           maxDayMg = Math.min(maxDayMg, regimen.maxDayMg);
+          // Rebuild both per-dose ends from the capped daily totals.
+          // Dividing maxDoseMg here would apply frequency a second time.
           minDoseMg = minDayMg / freq;
-          maxDoseMg = maxDoseMg / freq;
+          maxDoseMg = maxDayMg / freq;
         }
       } else if (regimen.basis === 'domperidone_rule') {
         if (pt.weight >= 35) {
@@ -977,12 +986,6 @@
       }
       if (drug.id === 'tazocin_iv' && pt.totalMonths <= 6) {
         warning = 'เกณฑ์ Tazocin ในตารางระบุสำหรับทารกอายุ > 6 เดือนขึ้นไป';
-      }
-
-      // The shared per-dose branch divides the per-dose max by frequency again after applying maxDayMg.
-      // Rebuild only Paracetamol's per-dose max from the capped daily total.
-      if (drug.id === 'paracetamol' && regimen.maxDayMg && freq) {
-        maxDoseMg = maxDayMg / freq;
       }
 
       return { minDoseMg, maxDoseMg, minDayMg, maxDayMg, warning };
@@ -1615,6 +1618,9 @@
         const rawMlNeeded = mlPerDose * totalDoses;
         const minBottleVol = Math.ceil((rawMlNeeded * 1.1) / 5) * 5;
         const minUnitsNeeded = Math.max(1, Math.ceil((minBottleVol * conc) / drug.unitStrengthMg));
+        if (state.prepTabsOverride !== null && state.prepTabsOverride < minUnitsNeeded) {
+          state.prepTabsOverride = minUnitsNeeded;
+        }
         const unitsToUse = state.prepTabsOverride !== null ? state.prepTabsOverride : minUnitsNeeded;
         const totalMgPrepared = unitsToUse * drug.unitStrengthMg;
         const finalQsVolumeMl = totalMgPrepared / conc;
@@ -1769,8 +1775,9 @@
     }
 
     function adjustPrepUnits(delta, minUnits) {
-      const current = state.prepTabsOverride !== null ? state.prepTabsOverride : minUnits;
-      state.prepTabsOverride = Math.max(1, current + delta);
+      const floor = Math.max(1, minUnits || 1);
+      const current = state.prepTabsOverride !== null ? state.prepTabsOverride : floor;
+      state.prepTabsOverride = Math.max(floor, current + delta);
       updateDynamicPanels();
     }
 
