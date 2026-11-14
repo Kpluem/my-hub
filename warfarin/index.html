@@ -189,18 +189,27 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            min-height: 52px;
-            padding: 10px 14px;
+            min-height: 74.5px;
+            padding: 10px 14px 12px;
             border-radius: 16px;
-            border: 1.5px solid #f0b4c0;
+            border: 1.5px solid #e5ddd3;
             background: #fffcf9;
             color: #8f1d36;
             font-weight: 600;
             font-size: 14px;
             line-height: 1.35;
         }
-        .bleed-toggle input { width: 20px; height: 20px; accent-color: #8f1d36; flex: none; }
-        .bleed-toggle:has(input:checked) { background: #fdecef; border-color: #8f1d36; }
+        .bleed-toggle:focus-within {
+            border-color: #3e6b5d;
+            box-shadow: 0 0 0 4px rgba(62, 107, 93, 0.14);
+        }
+        .bleed-toggle input { width: 20px; height: 20px; margin: 0; accent-color: #8f1d36; flex: none; }
+        .bleed-toggle > span { flex: 1; min-width: 0; }
+        .bleed-phrase { white-space: nowrap; }
+        .bleed-toggle:has(input:checked) {
+            background: #fde8ef;
+            border-color: #f3c9d6;
+        }
         .btn-go {
             width: 100%;
             min-height: 52px;
@@ -214,7 +223,7 @@
         }
         .btn-go:hover { background: #345a4e; }
         .btn-go:active { transform: scale(0.99); }
-        .as-flex .btn-go { margin-top: auto; }
+        .as-flex .btn-go { margin-top: 10px; }
 
         .seg-bar {
             display: grid;
@@ -396,6 +405,8 @@
         .status-banner.is-critical { background: #fdecef; border-color: #e89aab; color: #8f1d36; }
         .status-banner.is-bleed { background: #fde8ec; border-color: #b4233c; color: #7f1d32; }
         .status-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+        .status-banner.is-bleed .status-main h3,
+        .status-banner.is-bleed .status-main p { text-wrap: balance; }
         .status-icon {
             width: 44px;
             height: 44px;
@@ -637,7 +648,7 @@
                     </div>
                     <label class="bleed-toggle">
                         <input type="checkbox" id="majorBleeding">
-                        <span>มีเลือดออกรุนแรง (major bleeding)</span>
+                        <span><span class="bleed-phrase">มีเลือดออกรุนแรง</span> <span class="bleed-phrase">(major bleeding)</span></span>
                     </label>
                 </div>
                 <button type="button" onclick="calculateDose()" class="btn-go">ประมวลผลการปรับยา</button>
