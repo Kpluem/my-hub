@@ -199,7 +199,9 @@
             font-size: 14px;
             line-height: 1.35;
         }
-        .bleed-toggle input { width: 20px; height: 20px; accent-color: #8f1d36; flex: none; }
+        .bleed-toggle input { width: 20px; height: 20px; margin: 0; accent-color: #8f1d36; flex: none; }
+        .bleed-toggle > span { flex: 1; min-width: 0; }
+        .bleed-phrase { white-space: nowrap; }
         .bleed-toggle:has(input:checked) { background: #fdecef; border-color: #8f1d36; }
         .btn-go {
             width: 100%;
@@ -396,6 +398,8 @@
         .status-banner.is-critical { background: #fdecef; border-color: #e89aab; color: #8f1d36; }
         .status-banner.is-bleed { background: #fde8ec; border-color: #b4233c; color: #7f1d32; }
         .status-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+        .status-banner.is-bleed .status-main h3,
+        .status-banner.is-bleed .status-main p { text-wrap: balance; }
         .status-icon {
             width: 44px;
             height: 44px;
@@ -637,7 +641,7 @@
                     </div>
                     <label class="bleed-toggle">
                         <input type="checkbox" id="majorBleeding">
-                        <span>มีเลือดออกรุนแรง (major bleeding)</span>
+                        <span><span class="bleed-phrase">มีเลือดออกรุนแรง</span> <span class="bleed-phrase">(major bleeding)</span></span>
                     </label>
                 </div>
                 <button type="button" onclick="calculateDose()" class="btn-go">ประมวลผลการปรับยา</button>
