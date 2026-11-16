@@ -148,10 +148,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- TIER 1: Brand + Month Picker + Actions -->
-            <div class="h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-3">
+            <div class="min-h-16 py-2 sm:h-20 sm:py-0 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1.5 sm:gap-3">
                 
                 <!-- Left: Brand Identity -->
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-3 min-w-0 justify-self-start">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-violet-600 via-fuchsia-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-violet-500/20 shrink-0">
                         <i class="fa-solid fa-wallet text-base sm:text-lg"></i>
                     </div>
@@ -167,7 +167,7 @@
                 </div>
 
                 <!-- Center: Prominent Month Selector Pill -->
-                <div class="flex items-center bg-white border border-slate-200/90 rounded-full p-1 shadow-xs">
+                <div class="flex items-center bg-white border border-slate-200/90 rounded-full p-1 shadow-xs justify-self-end sm:justify-self-center">
                     <button onclick="changeMonth(-1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-slate-100 active:scale-90 text-slate-600 flex items-center justify-center transition" title="เดือนก่อนหน้า">
                         <i class="fa-solid fa-chevron-left text-[11px]"></i>
                     </button>
@@ -180,8 +180,8 @@
                     </button>
                 </div>
 
-                <!-- Right: Primary Action Buttons -->
-                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <!-- Right: Primary Action Buttons + sync. On a phone the group wraps onto its own row. -->
+                <div class="col-span-2 sm:col-span-1 sm:col-start-3 justify-self-end flex flex-wrap sm:flex-nowrap items-center justify-end gap-1.5 sm:gap-2">
                     <button onclick="openTransactionModalWithSlip()" class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white text-xs font-bold px-4 py-2.5 rounded-full transition shadow-sm shadow-violet-500/20 active:scale-95">
                         <i class="fa-solid fa-expand text-amber-200"></i>
                         <span>สแกนสลิป</span>
@@ -200,6 +200,16 @@
                     <button onclick="resetDemoData()" class="w-9 h-9 rounded-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-500 border border-slate-200/80 flex items-center justify-center transition shadow-2xs" title="รีเซ็ตข้อมูลตัวอย่าง">
                         <i class="fa-solid fa-rotate-right text-xs"></i>
                     </button>
+                    <div id="sync-cluster" class="flex items-center justify-end gap-1 shrink-0">
+                        <div id="sync-status" data-sync-state="signed-out" class="inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-white text-slate-500 border border-slate-200/80 shadow-2xs" title="ยังไม่ได้เข้าสู่ระบบ — ข้อมูลอยู่เฉพาะเครื่องนี้">
+                            <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                            <span id="sync-label">ยังไม่ซิงก์</span>
+                        </div>
+                        <button type="button" id="sync-auth-btn" onclick="handleSyncAuthClick()" class="inline-flex items-center gap-1.5 bg-white hover:bg-violet-50 text-slate-700 border border-slate-200/80 text-xs font-bold px-2.5 py-2 rounded-full transition shadow-2xs" title="เข้าสู่ระบบด้วย Google เพื่อซิงก์ระหว่างมือถือกับคอมพิวเตอร์">
+                            <i id="sync-auth-icon" class="fa-brands fa-google text-rose-500 text-[11px]"></i>
+                            <span id="sync-auth-label">ซิงก์</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1340,7 +1350,65 @@
         </div>
     </div>
 
+    <!-- Cloud sync conflict: shown only when this device and Firestore both have different data -->
+    <div id="modal-sync-conflict" class="fixed inset-0 z-[70] hidden overflow-y-auto">
+        <div class="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"></div>
+            <div class="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md p-6 z-10 animate-modal mobile-sheet">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900 leading-none">ข้อมูลในเครื่องกับคลาวด์ไม่ตรงกัน</h3>
+                        <p class="text-[10px] font-bold text-violet-600 mt-1">ระบบจะไม่เขียนทับให้อัตโนมัติ</p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">เลือกชุดที่จะใช้ซิงก์ต่อ หรือรวมรายการตามรหัส (เช่น tx_…, acc_…) รายการที่มีแค่ฝั่งเดียวจะถูกเก็บไว้ทั้งหมด สำเนาในเครื่องนี้ยังอยู่ระหว่างที่เลือก</p>
+                <p id="sync-conflict-summary" class="mt-3 text-[11px] font-bold text-slate-700 bg-slate-50 border border-slate-200/80 rounded-2xl px-3 py-2"></p>
+                <div class="mt-4 space-y-2">
+                    <button type="button" onclick="resolveSyncConflict('cloud')" class="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs">ใช้ข้อมูลคลาวด์ — แทนที่เครื่องนี้</button>
+                    <button type="button" onclick="resolveSyncConflict('local')" class="w-full py-3 rounded-2xl bg-white hover:bg-violet-50 text-slate-800 border border-slate-200 font-bold text-xs">ใช้ข้อมูลในเครื่องนี้ — แทนที่คลาวด์</button>
+                    <button type="button" onclick="resolveSyncConflict('merge')" class="w-full py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs">รวมตามรหัสรายการ</button>
+                </div>
+                <div id="sync-conflict-merge-choice" class="hidden mt-3 p-3 rounded-2xl bg-violet-50 border border-violet-200/80">
+                    <p class="text-[11px] text-violet-900 font-bold leading-relaxed">มี <span id="sync-conflict-merge-count">0</span> รายการที่รหัสเดียวกันแต่ข้อมูลต่างกัน ใช้ฝั่งไหนเป็นหลักสำหรับรายการที่ซ้ำ</p>
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" onclick="resolveSyncConflict('merge-cloud')" class="flex-1 py-2.5 rounded-xl bg-white border border-violet-200 text-[11px] font-bold text-violet-800">คลาวด์</button>
+                        <button type="button" onclick="resolveSyncConflict('merge-local')" class="flex-1 py-2.5 rounded-xl bg-violet-600 text-white text-[11px] font-bold">เครื่องนี้</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ==========================================
+        // FIREBASE SYNC CONFIG
+        // Paste the web app config from Firebase console.
+        // While any required value is still TODO, FinTrack stays local-only
+        // (localStorage) and does not load the Firebase SDK.
+        //
+        // Setup:
+        // 1. Replace the TODO values below.
+        // 2. Publish /firestore.rules (users/{userId}/** for that user only).
+        // 3. Authentication → Google, and add kpluem.github.io to Authorized domains.
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "TODO",
+            authDomain: "TODO",
+            projectId: "TODO",
+            storageBucket: "TODO",
+            messagingSenderId: "TODO",
+            appId: "TODO"
+        };
+
+        const FIREBASE_VERSION = '11.10.0';
+        const FIREBASE_CDN = 'https://www.gstatic.com/firebasejs/' + FIREBASE_VERSION;
+
+        let cloudSyncEnabled = false;
+        let seedingDemo = false;
+        let userEditedBeforeSync = false;
+        let storageExistedOnBoot = false;
+
         // ==========================================
         // 0. DYNAMIC PWA APP ICON & MANIFEST GENERATOR
         // ==========================================
@@ -1660,6 +1728,7 @@
         function loadInitialData() {
             const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('fintrack_colorful_minimal_wealth_v3');
             if (saved) {
+                storageExistedOnBoot = true;
                 try {
                     appData = JSON.parse(saved);
                     if (!appData.recurringBills) appData.recurringBills = [];
@@ -1667,6 +1736,7 @@
                     return;
                 } catch (e) { console.error(e); }
             }
+            storageExistedOnBoot = false;
             seedDemoData();
         }
 
@@ -1706,6 +1776,9 @@
         }
 
         function seedDemoData() {
+            const pushAfterSeed = cloudSyncEnabled && !conflictOpen;
+            seedingDemo = true;
+            try {
             const ym = selectedMonth;
             const mMinus3 = addMonthsToYm(ym, -3);
             const mMinus2 = addMonthsToYm(ym, -2);
@@ -1737,10 +1810,20 @@
                 investments: getDefaultInvestments()
             };
             saveData();
+            } finally {
+                seedingDemo = false;
+            }
+            if (pushAfterSeed) queueCloudPush();
         }
 
         function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (err) {
+                console.error(err);
+            }
+            if (!seedingDemo && !cloudSyncEnabled) userEditedBeforeSync = true;
+            if (!seedingDemo) queueCloudPush();
         }
 
         function resetDemoData() {
@@ -3460,7 +3543,1014 @@
             initMonthPicker();
             renderBrandPresetStrips();
             renderAll();
+            initCloudSync();
         });
+
+        // ==========================================
+        // CLOUD SYNC (Firebase Auth + Cloud Firestore)
+        //
+        // Each record is its own document so a growing ledger stays under
+        // Firestore's 1 MB document limit:
+        //   users/{uid}
+        //   users/{uid}/accounts/{id}
+        //   users/{uid}/transactions/{id}
+        //   users/{uid}/recurringBills/{id}
+        //   users/{uid}/installments/{id}
+        //   users/{uid}/investments/{id}
+        // Slip images and OCR text are not stored on the record (the scanner
+        // only fills the form). data: URLs and very long strings are stripped
+        // before upload so a pasted image cannot be synced.
+        // sortOrder is sync-only and is removed before data reaches the UI.
+        // localStorage remains the cache and the fallback when signed out,
+        // offline, or still on the placeholder config.
+        // Firestore uses persistentLocalCache so an offline entry is kept in
+        // IndexedDB and uploaded after the device reconnects.
+        // ?emulator=1 connects to the local Auth (9099) and Firestore (8080)
+        // emulators after a real config is present. It does nothing on GitHub Pages.
+        // ==========================================
+        const SYNC_COLLECTIONS = ['accounts', 'transactions', 'recurringBills', 'installments', 'investments'];
+        const SYNC_BASE_KEY = 'fintrack_sync_base_v1';
+        const SYNC_UID_KEY = 'fintrack_sync_uid_v1';
+        const SYNC_FIELD_CHAR_LIMIT = 10000;
+        const SYNC_DOC_BYTE_LIMIT = 900000;
+
+        const SYNC_VIEWS = {
+            'signed-out': { label: 'ยังไม่ซิงก์', dot: 'bg-slate-400', text: 'text-slate-500', title: 'ยังไม่ได้เข้าสู่ระบบ — ข้อมูลอยู่เฉพาะเครื่องนี้' },
+            'syncing': { label: 'กำลังซิงก์', dot: 'bg-amber-400 animate-pulse', text: 'text-amber-700', title: 'กำลังซิงก์ข้อมูล' },
+            'synced': { label: 'ซิงก์แล้ว', dot: 'bg-emerald-500', text: 'text-emerald-700', title: 'ซิงก์กับคลาวด์แล้ว' },
+            'offline': { label: 'ออฟไลน์', dot: 'bg-slate-500', text: 'text-slate-600', title: 'ออฟไลน์ — รายการใหม่จะซิงก์เมื่อกลับมาออนไลน์' }
+        };
+
+        let syncAuth = null;
+        let syncDb = null;
+        let syncModules = null;
+        let syncUser = null;
+        let cloudSnapshot = null;
+        let cloudSnapshotVersion = 0;
+
+        function setCloudSnapshot(data) {
+            cloudSnapshot = data;
+            cloudSnapshotVersion += 1;
+        }
+        let conflictOpen = false;
+        let pendingRemote = null;
+        let pendingBase = null;
+        let migrationDone = false;
+        let holdRemote = false;
+        let applyingRemote = false;
+        let pushInFlight = false;
+        let pushQueued = false;
+        let localEpoch = 0;
+        let flushedEpoch = 0;
+        let authEpoch = 0;
+        let cloudInitStarted = false;
+        let permissionAlerted = false;
+        let unsubscribers = [];
+        let remoteBuffers = {};
+        let remoteReady = {};
+        let remoteFromCache = {};
+        let remoteSeenServer = {};
+        let pendingByCol = {};
+        let reconcileTimer = null;
+        let orderKeys = {};
+
+        function isFirebaseConfigured(cfg) {
+            try {
+                if (!cfg || typeof cfg !== 'object') return false;
+                const required = ['apiKey', 'authDomain', 'projectId', 'appId'];
+                return required.every(key => {
+                    const value = cfg[key];
+                    if (typeof value !== 'string') return false;
+                    const trimmed = value.trim();
+                    if (!trimmed) return false;
+                    const upper = trimmed.toUpperCase();
+                    if (upper.includes('TODO')) return false;
+                    if (trimmed.includes('YOUR_')) return false;
+                    if (trimmed.indexOf('<') !== -1 || trimmed.indexOf('>') !== -1) return false;
+                    return true;
+                });
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function emulatorRequested() {
+            try {
+                return new URLSearchParams(location.search).get('emulator') === '1';
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function prefersRedirectSignIn() {
+            try {
+                const ua = navigator.userAgent || '';
+                const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (!iOS) return false;
+                const standalone = window.navigator.standalone === true
+                    || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+                const safari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome/i.test(ua);
+                return !!(standalone || safari);
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function setSyncStatus(state) {
+            const view = SYNC_VIEWS[state] || SYNC_VIEWS['signed-out'];
+            const root = document.getElementById('sync-status');
+            const dot = document.getElementById('sync-dot');
+            const label = document.getElementById('sync-label');
+            if (!root || !dot || !label) return;
+            label.textContent = view.label;
+            root.title = view.title;
+            root.dataset.syncState = state;
+            root.className = 'inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-white border border-slate-200/80 shadow-2xs ' + view.text;
+            dot.className = 'w-1.5 h-1.5 rounded-full shrink-0 ' + view.dot;
+        }
+
+        function refreshSyncStatus(forceSyncing) {
+            if (!syncUser) {
+                setSyncStatus('signed-out');
+                return;
+            }
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                setSyncStatus('offline');
+                return;
+            }
+            if (forceSyncing || pushInFlight || conflictOpen || localEpoch !== flushedEpoch) {
+                setSyncStatus('syncing');
+                return;
+            }
+            setSyncStatus('synced');
+        }
+
+        function updateAuthButton() {
+            const label = document.getElementById('sync-auth-label');
+            const icon = document.getElementById('sync-auth-icon');
+            const btn = document.getElementById('sync-auth-btn');
+            if (!btn || !label || !icon) return;
+            if (syncUser) {
+                label.textContent = 'ออก';
+                icon.className = 'fa-solid fa-right-from-bracket text-slate-500 text-[11px]';
+                btn.title = 'ออกจากระบบ (' + (syncUser.email || 'Google') + ') — ข้อมูลในเครื่องยังอยู่';
+            } else {
+                label.textContent = 'ซิงก์';
+                icon.className = 'fa-brands fa-google text-rose-500 text-[11px]';
+                btn.title = 'เข้าสู่ระบบด้วย Google เพื่อซิงก์ระหว่างมือถือกับคอมพิวเตอร์';
+            }
+        }
+
+        function emptySyncData() {
+            return { accounts: [], transactions: [], recurringBills: [], installments: [], investments: [] };
+        }
+
+        function ensureSyncData(data) {
+            const src = data || {};
+            const out = emptySyncData();
+            SYNC_COLLECTIONS.forEach(col => {
+                out[col] = Array.isArray(src[col]) ? src[col].filter(item => item && item.id != null).map(item => stripSyncFields(item)) : [];
+            });
+            return out;
+        }
+
+        function cloneSyncData(data) {
+            return JSON.parse(JSON.stringify(ensureSyncData(data)));
+        }
+
+        function stripSyncFields(item) {
+            const copy = {};
+            if (!item || typeof item !== 'object') return copy;
+            Object.keys(item).forEach(key => {
+                if (key === 'sortOrder' || key === '__sort') return;
+                copy[key] = item[key];
+            });
+            return copy;
+        }
+
+        function stableStringify(value) {
+            if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+            if (value && typeof value === 'object') {
+                return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + stableStringify(value[key])).join(',') + '}';
+            }
+            return JSON.stringify(value);
+        }
+
+        function dataSignature(data) {
+            const norm = ensureSyncData(data);
+            return SYNC_COLLECTIONS.map(col => norm[col].map(item => String(item.id) + ':' + stableStringify(item)).join('|')).join('||');
+        }
+
+        function mapById(list) {
+            const map = new Map();
+            (list || []).forEach(item => {
+                if (item && item.id != null) map.set(String(item.id), item);
+            });
+            return map;
+        }
+
+        function isSafeDocId(id) {
+            const value = String(id);
+            return value.length > 0 && value.length <= 700 && value.indexOf('/') === -1 && value !== '.' && value !== '..';
+        }
+
+        function sanitizeValue(value, depth) {
+            if (value == null) return value;
+            if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+            if (typeof value === 'string') {
+                if (/^data:(image|application)\//i.test(value)) return '';
+                if (value.length > SYNC_FIELD_CHAR_LIMIT) return '';
+                return value;
+            }
+            if (typeof value === 'boolean') return value;
+            if (Array.isArray(value)) {
+                return value.filter(entry => !Array.isArray(entry)).map(entry => sanitizeValue(entry, depth + 1));
+            }
+            if (typeof value === 'object') {
+                if (depth > 8) return null;
+                const out = {};
+                Object.keys(value).forEach(key => {
+                    if (!key || key.indexOf('/') !== -1 || key.indexOf('__') === 0) return;
+                    const next = sanitizeValue(value[key], depth + 1);
+                    if (next !== undefined) out[key] = next;
+                });
+                return out;
+            }
+            return undefined;
+        }
+
+        function payloadBytes(value) {
+            try {
+                return new TextEncoder().encode(JSON.stringify(value)).length;
+            } catch (err) {
+                return SYNC_DOC_BYTE_LIMIT + 1;
+            }
+        }
+
+        function shrinkPayload(payload) {
+            const copy = JSON.parse(JSON.stringify(payload));
+            const walk = obj => {
+                if (!obj || typeof obj !== 'object') return;
+                Object.keys(obj).forEach(key => {
+                    const current = obj[key];
+                    if (typeof current === 'string' && current.length > 500) obj[key] = '';
+                    else if (current && typeof current === 'object') walk(current);
+                });
+            };
+            walk(copy);
+            return copy;
+        }
+
+        function rememberOrder(col, id, sortOrder) {
+            if (typeof sortOrder !== 'number') return;
+            if (!orderKeys[col]) orderKeys[col] = new Map();
+            orderKeys[col].set(String(id), sortOrder);
+        }
+
+        function ordersForWrite(col, items) {
+            if (!orderKeys[col]) orderKeys[col] = new Map();
+            const known = orderKeys[col];
+            const orders = new Array(items.length);
+            let cursor = null;
+            for (let i = items.length - 1; i >= 0; i--) {
+                const id = String(items[i].id);
+                if (known.has(id)) {
+                    cursor = known.get(id);
+                    orders[i] = cursor;
+                } else {
+                    const assigned = cursor == null ? i : cursor - 1;
+                    known.set(id, assigned);
+                    cursor = assigned;
+                    orders[i] = assigned;
+                }
+            }
+            return orders;
+        }
+
+        function toCloudPayload(item, sortOrder) {
+            if (!item || !isSafeDocId(item.id)) return null;
+            const clean = sanitizeValue(stripSyncFields(item), 0);
+            if (!clean || typeof clean !== 'object') return null;
+            clean.id = String(item.id);
+            clean.sortOrder = sortOrder;
+            if (payloadBytes(clean) > SYNC_DOC_BYTE_LIMIT) {
+                const shrunk = shrinkPayload(clean);
+                shrunk.id = String(item.id);
+                shrunk.sortOrder = sortOrder;
+                if (payloadBytes(shrunk) > SYNC_DOC_BYTE_LIMIT) return null;
+                return shrunk;
+            }
+            return clean;
+        }
+
+        function fromCloudDoc(col, id, data) {
+            const sortOrder = data && typeof data.sortOrder === 'number' ? data.sortOrder : Number.MAX_SAFE_INTEGER;
+            rememberOrder(col, id, data && data.sortOrder);
+            const item = stripSyncFields(Object.assign({}, data || {}, { id: id }));
+            return { item: item, sortOrder: sortOrder };
+        }
+
+        function sortCloudItems(entries) {
+            return entries
+                .slice()
+                .sort((a, b) => a.sortOrder - b.sortOrder || String(a.item.id).localeCompare(String(b.item.id)))
+                .map(entry => entry.item);
+        }
+
+        function countIdConflicts(local, remote) {
+            let count = 0;
+            const left = ensureSyncData(local);
+            const right = ensureSyncData(remote);
+            SYNC_COLLECTIONS.forEach(col => {
+                const remoteMap = mapById(right[col]);
+                left[col].forEach(item => {
+                    const other = remoteMap.get(String(item.id));
+                    if (other && stableStringify(stripSyncFields(item)) !== stableStringify(stripSyncFields(other))) count += 1;
+                });
+            });
+            return count;
+        }
+
+        function summarizeSyncData(data) {
+            const norm = ensureSyncData(data);
+            const labels = { accounts: 'บัญชี', transactions: 'รายการ', recurringBills: 'บิล', installments: 'ผ่อน', investments: 'ออม' };
+            return SYNC_COLLECTIONS.map(col => labels[col] + ' ' + norm[col].length).join(' · ');
+        }
+
+        function mergeById(local, remote, winner) {
+            const left = ensureSyncData(local);
+            const right = ensureSyncData(remote);
+            const merged = emptySyncData();
+            SYNC_COLLECTIONS.forEach(col => {
+                const remoteMap = mapById(right[col]);
+                const seen = new Set();
+                const items = [];
+                left[col].forEach(item => {
+                    const id = String(item.id);
+                    if (seen.has(id)) return;
+                    seen.add(id);
+                    const other = remoteMap.get(id);
+                    if (!other || stableStringify(stripSyncFields(item)) === stableStringify(stripSyncFields(other))) items.push(JSON.parse(JSON.stringify(item)));
+                    else items.push(JSON.parse(JSON.stringify(winner === 'cloud' ? other : item)));
+                });
+                right[col].forEach(item => {
+                    const id = String(item.id);
+                    if (seen.has(id)) return;
+                    seen.add(id);
+                    items.push(JSON.parse(JSON.stringify(item)));
+                });
+                merged[col] = items;
+            });
+            return merged;
+        }
+
+        function planMerge(local, remote, base) {
+            const left = ensureSyncData(local);
+            const right = ensureSyncData(remote);
+            const foundation = base ? ensureSyncData(base) : null;
+            const conflicts = [];
+            const merged = emptySyncData();
+            SYNC_COLLECTIONS.forEach(col => {
+                const localMap = mapById(left[col]);
+                const remoteMap = mapById(right[col]);
+                const baseMap = foundation ? mapById(foundation[col]) : new Map();
+                const seen = new Set();
+                const ordered = [];
+                left[col].forEach(item => {
+                    const id = String(item.id);
+                    if (!seen.has(id)) { seen.add(id); ordered.push(id); }
+                });
+                right[col].forEach(item => {
+                    const id = String(item.id);
+                    if (!seen.has(id)) { seen.add(id); ordered.push(id); }
+                });
+                const items = [];
+                ordered.forEach(id => {
+                    const l = localMap.get(id);
+                    const r = remoteMap.get(id);
+                    const b = baseMap.get(id);
+                    const lSig = l ? stableStringify(stripSyncFields(l)) : null;
+                    const rSig = r ? stableStringify(stripSyncFields(r)) : null;
+                    const bSig = b ? stableStringify(stripSyncFields(b)) : null;
+                    if (l && r && lSig === rSig) {
+                        items.push(JSON.parse(JSON.stringify(l)));
+                        return;
+                    }
+                    if (l && !r) {
+                        if (!(b && lSig === bSig)) items.push(JSON.parse(JSON.stringify(l)));
+                        if (b && lSig !== bSig) conflicts.push({ col: col, id: id });
+                        return;
+                    }
+                    if (r && !l) {
+                        if (!(b && rSig === bSig)) items.push(JSON.parse(JSON.stringify(r)));
+                        if (b && rSig !== bSig) conflicts.push({ col: col, id: id });
+                        return;
+                    }
+                    if (l && r && lSig !== rSig) {
+                        if (b && lSig === bSig) { items.push(JSON.parse(JSON.stringify(r))); return; }
+                        if (b && rSig === bSig) { items.push(JSON.parse(JSON.stringify(l))); return; }
+                        conflicts.push({ col: col, id: id });
+                        items.push(JSON.parse(JSON.stringify(l)));
+                    }
+                });
+                merged[col] = items;
+            });
+            return { merged: merged, conflicts: conflicts };
+        }
+
+        function applyConflictWinner(local, remote, base, winner) {
+            if (!base) return mergeById(local, remote, winner);
+            const plan = planMerge(local, remote, base);
+            const source = ensureSyncData(winner === 'cloud' ? remote : local);
+            plan.conflicts.forEach(conflict => {
+                const chosen = mapById(source[conflict.col]).get(conflict.id);
+                const list = plan.merged[conflict.col];
+                const idx = list.findIndex(item => String(item.id) === conflict.id);
+                if (!chosen) {
+                    if (idx >= 0) list.splice(idx, 1);
+                } else if (idx >= 0) {
+                    list[idx] = JSON.parse(JSON.stringify(chosen));
+                } else {
+                    list.push(JSON.parse(JSON.stringify(chosen)));
+                }
+            });
+            return plan.merged;
+        }
+
+        function readSyncBase(uid) {
+            try {
+                if (localStorage.getItem(SYNC_UID_KEY) !== uid) return null;
+                const raw = localStorage.getItem(SYNC_BASE_KEY);
+                if (!raw) return null;
+                return ensureSyncData(JSON.parse(raw));
+            } catch (err) {
+                return null;
+            }
+        }
+
+        function writeSyncBase(data, uid) {
+            try {
+                localStorage.setItem(SYNC_BASE_KEY, JSON.stringify(ensureSyncData(data)));
+                if (uid) localStorage.setItem(SYNC_UID_KEY, uid);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function writeLocalCache(data) {
+            applyingRemote = true;
+            appData = ensureSyncData(data);
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (err) {
+                console.error(err);
+            }
+            applyingRemote = false;
+        }
+
+        function buildSyncOps(local, base) {
+            const ops = [];
+            const current = ensureSyncData(local);
+            const previous = ensureSyncData(base);
+            SYNC_COLLECTIONS.forEach(col => {
+                const baseItems = previous[col];
+                const baseMap = mapById(baseItems);
+                const localIds = new Set();
+                const orders = ordersForWrite(col, current[col]);
+                current[col].forEach((item, index) => {
+                    if (!isSafeDocId(item.id)) return;
+                    const id = String(item.id);
+                    localIds.add(id);
+                    const prev = baseMap.get(id);
+                    const payload = toCloudPayload(item, orders[index]);
+                    if (!payload) return;
+                    const changed = !prev || stableStringify(stripSyncFields(prev)) !== stableStringify(stripSyncFields(item));
+                    if (changed) ops.push({ type: 'set', col: col, id: id, data: payload });
+                });
+                baseItems.forEach(prev => {
+                    const id = String(prev.id);
+                    if (!localIds.has(id) && isSafeDocId(id)) ops.push({ type: 'delete', col: col, id: id });
+                });
+            });
+            return ops;
+        }
+
+        async function commitSyncOps(ops, touchMeta) {
+            const fsMod = syncModules.fsMod;
+            const uid = syncUser.uid;
+            const chunkSize = 400;
+            for (let i = 0; i < ops.length; i += chunkSize) {
+                const batch = fsMod.writeBatch(syncDb);
+                ops.slice(i, i + chunkSize).forEach(op => {
+                    const ref = fsMod.doc(syncDb, 'users', uid, op.col, op.id);
+                    if (op.type === 'delete') batch.delete(ref);
+                    else batch.set(ref, op.data);
+                });
+                await batch.commit();
+            }
+            if (touchMeta || ops.length) {
+                await fsMod.setDoc(fsMod.doc(syncDb, 'users', uid), {
+                    schemaVersion: 1,
+                    updatedAt: fsMod.serverTimestamp()
+                }, { merge: true });
+            }
+        }
+
+        function queueCloudPush() {
+            if (!cloudSyncEnabled || applyingRemote || conflictOpen || !syncUser || !migrationDone) return;
+            localEpoch += 1;
+            pushQueued = true;
+            clearTimeout(queueCloudPush._timer);
+            queueCloudPush._timer = setTimeout(() => {
+                flushCloudPush().catch(err => {
+                    console.error(err);
+                    pushInFlight = false;
+                    setSyncStatus('offline');
+                });
+            }, 300);
+        }
+
+        async function flushCloudPush() {
+            if (!cloudSyncEnabled || conflictOpen || !syncUser) return;
+            if (pushInFlight) return;
+            pushInFlight = true;
+            pushQueued = false;
+            refreshSyncStatus(true);
+            let failed = false;
+            try {
+                let spins = 0;
+                while (localEpoch !== flushedEpoch && spins < 8) {
+                    spins += 1;
+                    const epoch = localEpoch;
+                    const seenVersion = cloudSnapshotVersion;
+                    const snapshot = cloneSyncData(appData);
+                    const base = cloneSyncData(cloudSnapshot || emptySyncData());
+                    const ops = buildSyncOps(snapshot, base);
+                    if (ops.length) {
+                        await commitSyncOps(ops, true);
+                        // commit() resolved, so the backend accepted the write.
+                        // A listen snapshot can keep hasPendingWrites true after that.
+                        ops.forEach(op => { pendingByCol[op.col] = false; });
+                    }
+                    if (localEpoch !== epoch) continue;
+                    if (cloudSnapshotVersion === seenVersion) setCloudSnapshot(snapshot);
+                    if (dataSignature(appData) === dataSignature(cloudSnapshot || emptySyncData())) {
+                        flushedEpoch = epoch;
+                        writeSyncBase(ensureSyncData(appData), syncUser.uid);
+                    }
+                }
+                if (localEpoch !== flushedEpoch) {
+                    console.warn('FinTrack sync paused after repeated cloud updates');
+                    flushedEpoch = localEpoch;
+                }
+                if (unsubscribers.length === 0) startListeners();
+            } catch (err) {
+                failed = true;
+                console.error(err);
+                noteSyncError(err);
+            } finally {
+                pushInFlight = false;
+                refreshSyncStatus(false);
+                if (!failed && (pushQueued || localEpoch !== flushedEpoch)) queueCloudPush();
+                else if (!failed) scheduleReconcile();
+            }
+        }
+
+        function noteSyncError(err) {
+            const code = err && (err.code || '');
+            if (code === 'permission-denied' && !permissionAlerted) {
+                permissionAlerted = true;
+                alert('ซิงก์ถูกปฏิเสธ กรุณาเผยแพร่ Firestore rules ให้ผู้ใช้เขียนได้เฉพาะ users/{uid} ของตัวเอง');
+            }
+            setSyncStatus('offline');
+        }
+
+        function stopListeners() {
+            unsubscribers.forEach(unsub => {
+                try { unsub(); } catch (err) { console.error(err); }
+            });
+            unsubscribers = [];
+            remoteReady = {};
+            remoteFromCache = {};
+            remoteSeenServer = {};
+            pendingByCol = {};
+            remoteBuffers = {};
+            orderKeys = {};
+        }
+
+        function startListeners() {
+            if (!syncUser || !syncModules) return;
+            stopListeners();
+            const fsMod = syncModules.fsMod;
+            const uid = syncUser.uid;
+            migrationDone = true;
+            cloudSyncEnabled = true;
+            SYNC_COLLECTIONS.forEach(col => {
+                const ref = fsMod.collection(syncDb, 'users', uid, col);
+                const unsub = fsMod.onSnapshot(ref, snap => {
+                    pendingByCol[col] = snap.metadata.hasPendingWrites;
+                    if (!snap.metadata.fromCache) remoteSeenServer[col] = true;
+                    remoteFromCache[col] = !!snap.metadata.fromCache;
+                    remoteBuffers[col] = sortCloudItems(snap.docs.map(docSnap => fromCloudDoc(col, docSnap.id, docSnap.data())));
+                    remoteReady[col] = true;
+                    scheduleReconcile();
+                }, err => {
+                    console.error(err);
+                    noteSyncError(err);
+                });
+                unsubscribers.push(unsub);
+            });
+            refreshSyncStatus(false);
+        }
+
+        function scheduleReconcile() {
+            clearTimeout(reconcileTimer);
+            reconcileTimer = setTimeout(reconcileRemote, 40);
+        }
+
+        function remoteSnapshotData() {
+            const data = emptySyncData();
+            SYNC_COLLECTIONS.forEach(col => {
+                data[col] = remoteBuffers[col] ? remoteBuffers[col].map(item => stripSyncFields(item)) : [];
+            });
+            return data;
+        }
+
+        function coldEmptyCache() {
+            const remote = remoteSnapshotData();
+            const remoteEmpty = SYNC_COLLECTIONS.every(col => !remote[col] || remote[col].length === 0);
+            const waitingForServer = SYNC_COLLECTIONS.some(col => remoteFromCache[col] && !remoteSeenServer[col]);
+            const haveLocal = SYNC_COLLECTIONS.some(col => (appData[col] || []).length > 0);
+            return waitingForServer && remoteEmpty && haveLocal;
+        }
+
+        function reconcileRemote() {
+            if (!migrationDone || conflictOpen || holdRemote) return;
+            if (!SYNC_COLLECTIONS.every(col => remoteReady[col])) return;
+            if (coldEmptyCache()) return;
+            const remote = remoteSnapshotData();
+            if (pushInFlight || localEpoch !== flushedEpoch) {
+                mergeUnownedRemote(remote);
+                refreshSyncStatus(true);
+                return;
+            }
+            if (dataSignature(remote) !== dataSignature(appData)) {
+                writeLocalCache(remote);
+                renderAll();
+            }
+            setCloudSnapshot(cloneSyncData(remote));
+            writeSyncBase(cloudSnapshot, syncUser.uid);
+            flushedEpoch = localEpoch;
+            refreshSyncStatus(false);
+        }
+
+        function mergeUnownedRemote(remote) {
+            const base = ensureSyncData(cloudSnapshot || emptySyncData());
+            const local = ensureSyncData(appData);
+            const next = emptySyncData();
+            let changed = false;
+            SYNC_COLLECTIONS.forEach(col => {
+                const baseMap = mapById(base[col]);
+                const remoteMap = mapById(remote[col]);
+                const seen = new Set();
+                const items = [];
+                local[col].forEach(item => {
+                    const id = String(item.id);
+                    seen.add(id);
+                    const baseItem = baseMap.get(id);
+                    const remoteItem = remoteMap.get(id);
+                    const localChanged = !baseItem || stableStringify(stripSyncFields(baseItem)) !== stableStringify(stripSyncFields(item));
+                    if (!localChanged && remoteItem) items.push(JSON.parse(JSON.stringify(remoteItem)));
+                    else if (!remoteItem && baseItem && !localChanged) changed = true;
+                    else items.push(JSON.parse(JSON.stringify(item)));
+                });
+                remote[col].forEach(item => {
+                    const id = String(item.id);
+                    if (seen.has(id)) return;
+                    if (!baseMap.has(id)) {
+                        items.push(JSON.parse(JSON.stringify(item)));
+                        changed = true;
+                    }
+                });
+                if (stableStringify(items) !== stableStringify(local[col])) changed = true;
+                next[col] = items;
+            });
+            setCloudSnapshot(cloneSyncData(remote));
+            if (changed) {
+                writeLocalCache(next);
+                renderAll();
+            }
+        }
+
+        async function fetchCloud(uid) {
+            const fsMod = syncModules.fsMod;
+            const metaSnap = await fsMod.getDoc(fsMod.doc(syncDb, 'users', uid));
+            const data = emptySyncData();
+            for (const col of SYNC_COLLECTIONS) {
+                const snap = await fsMod.getDocs(fsMod.collection(syncDb, 'users', uid, col));
+                data[col] = sortCloudItems(snap.docs.map(docSnap => fromCloudDoc(col, docSnap.id, docSnap.data())));
+            }
+            const hasDocs = SYNC_COLLECTIONS.some(col => data[col].length > 0);
+            return { initialized: metaSnap.exists() || hasDocs, data: data };
+        }
+
+        function showConflictModal(localData, cloudData) {
+            conflictOpen = true;
+            const summary = document.getElementById('sync-conflict-summary');
+            const conflictCount = pendingBase ? planMerge(localData, cloudData, pendingBase).conflicts.length : countIdConflicts(localData, cloudData);
+            if (summary) {
+                summary.textContent = 'เครื่องนี้: ' + summarizeSyncData(localData) + '  |  คลาวด์: ' + summarizeSyncData(cloudData)
+                    + (conflictCount ? '  |  รายการที่ชนกัน ' + conflictCount : '');
+            }
+            const extra = document.getElementById('sync-conflict-merge-choice');
+            if (extra) extra.classList.add('hidden');
+            const modal = document.getElementById('modal-sync-conflict');
+            if (modal) modal.classList.remove('hidden');
+            refreshSyncStatus(true);
+        }
+
+        function hideConflictModal() {
+            const modal = document.getElementById('modal-sync-conflict');
+            if (modal) modal.classList.add('hidden');
+            const extra = document.getElementById('sync-conflict-merge-choice');
+            if (extra) extra.classList.add('hidden');
+        }
+
+        async function adoptCloud(remote, uid) {
+            writeLocalCache(remote);
+            setCloudSnapshot(cloneSyncData(remote));
+            writeSyncBase(remote, uid);
+            flushedEpoch = localEpoch;
+            renderAll();
+            startListeners();
+            refreshSyncStatus(false);
+        }
+
+        async function uploadLocal(remoteBase) {
+            setCloudSnapshot(cloneSyncData(remoteBase || emptySyncData()));
+            holdRemote = true;
+            cloudSyncEnabled = true;
+            migrationDone = true;
+            try {
+                const snapshot = cloneSyncData(appData);
+                const ops = buildSyncOps(snapshot, cloudSnapshot);
+                await commitSyncOps(ops, true);
+                setCloudSnapshot(snapshot);
+                flushedEpoch = localEpoch;
+                writeSyncBase(snapshot, syncUser.uid);
+                holdRemote = false;
+                startListeners();
+                refreshSyncStatus(false);
+            } catch (err) {
+                holdRemote = false;
+                cloudSyncEnabled = true;
+                migrationDone = true;
+                noteSyncError(err);
+                throw err;
+            }
+        }
+
+        async function resolveInitialSync(uid, cloud) {
+            const local = ensureSyncData(appData);
+            const remote = ensureSyncData(cloud.data);
+            const linkedUid = localStorage.getItem(SYNC_UID_KEY);
+            const base = readSyncBase(uid);
+            const pristineDemo = !storageExistedOnBoot && !userEditedBeforeSync;
+            pendingBase = base;
+            pendingRemote = remote;
+
+            if (!cloud.initialized) {
+                if (linkedUid && linkedUid !== uid && !pristineDemo) {
+                    showConflictModal(local, remote);
+                    return;
+                }
+                await uploadLocal(emptySyncData());
+                return;
+            }
+            if (pristineDemo) {
+                await adoptCloud(remote, uid);
+                return;
+            }
+            if (base) {
+                const plan = planMerge(local, remote, base);
+                if (!plan.conflicts.length) {
+                    writeLocalCache(plan.merged);
+                    renderAll();
+                    await uploadLocal(remote);
+                    return;
+                }
+                showConflictModal(local, remote);
+                return;
+            }
+            if (dataSignature(local) === dataSignature(remote)) {
+                await adoptCloud(remote, uid);
+                return;
+            }
+            showConflictModal(local, remote);
+        }
+
+        async function resolveSyncConflict(choice) {
+            if (!syncUser || !pendingRemote) return;
+            try {
+                if (choice === 'merge') {
+                    const conflictCount = pendingBase
+                        ? planMerge(appData, pendingRemote, pendingBase).conflicts.length
+                        : countIdConflicts(appData, pendingRemote);
+                    if (conflictCount > 0) {
+                        const box = document.getElementById('sync-conflict-merge-choice');
+                        const countEl = document.getElementById('sync-conflict-merge-count');
+                        if (countEl) countEl.textContent = String(conflictCount);
+                        if (box) box.classList.remove('hidden');
+                        return;
+                    }
+                    const merged = pendingBase ? planMerge(appData, pendingRemote, pendingBase).merged : mergeById(appData, pendingRemote, 'cloud');
+                    await finishConflict(merged, true);
+                    return;
+                }
+                if (choice === 'merge-cloud' || choice === 'merge-local') {
+                    const winner = choice === 'merge-local' ? 'local' : 'cloud';
+                    const merged = applyConflictWinner(appData, pendingRemote, pendingBase, winner);
+                    await finishConflict(merged, true);
+                    return;
+                }
+                if (choice === 'cloud') {
+                    await finishConflict(pendingRemote, false);
+                    return;
+                }
+                if (choice === 'local') {
+                    await finishConflict(appData, true);
+                }
+            } catch (err) {
+                console.error(err);
+                setSyncStatus('offline');
+                alert('ยังบันทึกตัวเลือกนี้ขึ้นคลาวด์ไม่สำเร็จ ข้อมูลในเครื่องยังอยู่');
+            }
+        }
+
+        async function finishConflict(nextData, upload) {
+            conflictOpen = false;
+            hideConflictModal();
+            const remoteBase = pendingRemote ? cloneSyncData(pendingRemote) : emptySyncData();
+            writeLocalCache(nextData);
+            renderAll();
+            if (upload) await uploadLocal(remoteBase);
+            else await adoptCloud(remoteBase, syncUser.uid);
+            pendingRemote = null;
+            pendingBase = null;
+        }
+
+        async function handleAuthChanged(user) {
+            const sameUser = !!(syncUser && user && syncUser.uid === user.uid);
+            if (sameUser && (conflictOpen || migrationDone)) {
+                syncUser = user;
+                updateAuthButton();
+                return;
+            }
+            const epoch = ++authEpoch;
+            stopListeners();
+            cloudSyncEnabled = false;
+            migrationDone = false;
+            conflictOpen = false;
+            hideConflictModal();
+            syncUser = user || null;
+            updateAuthButton();
+            if (!user) {
+                pendingRemote = null;
+                setSyncStatus('signed-out');
+                return;
+            }
+            setSyncStatus(navigator.onLine ? 'syncing' : 'offline');
+            try {
+                const cloud = await fetchCloud(user.uid);
+                if (epoch !== authEpoch) return;
+                await resolveInitialSync(user.uid, cloud);
+            } catch (err) {
+                if (epoch !== authEpoch) return;
+                console.error(err);
+                cloudSyncEnabled = false;
+                migrationDone = false;
+                setSyncStatus('offline');
+            }
+        }
+
+        async function signInWithGoogle() {
+            if (!syncModules || !syncAuth) return;
+            const authMod = syncModules.authMod;
+            const provider = new authMod.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            setSyncStatus('syncing');
+            try {
+                if (prefersRedirectSignIn()) {
+                    await authMod.signInWithRedirect(syncAuth, provider);
+                    return;
+                }
+                await authMod.signInWithPopup(syncAuth, provider);
+            } catch (err) {
+                const code = err && err.code;
+                const canRedirect = code === 'auth/popup-blocked'
+                    || code === 'auth/operation-not-supported-in-this-environment'
+                    || code === 'auth/web-storage-unsupported';
+                if (canRedirect) {
+                    try {
+                        await authMod.signInWithRedirect(syncAuth, provider);
+                        return;
+                    } catch (redirectErr) {
+                        console.error(redirectErr);
+                    }
+                }
+                if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+                    console.error(err);
+                    alert('เข้าสู่ระบบไม่สำเร็จ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
+                }
+                refreshSyncStatus(false);
+            }
+        }
+
+        async function handleSyncAuthClick() {
+            try {
+                if (!isFirebaseConfigured(firebaseConfig)) {
+                    alert('ยังไม่ได้ใส่ค่า Firebase\n\nเปิด my-money/index.html แล้วแทนที่ค่า TODO ใน firebaseConfig\nจากนั้นเผยแพร่ Firestore rules และเพิ่ม kpluem.github.io ใน Authorized domains\n\nตอนนี้ข้อมูลยังถูกเก็บในเครื่องนี้ตามเดิม');
+                    return;
+                }
+                if (!syncAuth || !syncModules) {
+                    alert('ยังเชื่อมต่อบริการซิงก์ไม่ได้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
+                    return;
+                }
+                if (syncUser) {
+                    if (confirm('ออกจากระบบ Google? ข้อมูลในเครื่องนี้จะยังอยู่ และจะไม่ซิงก์จนกว่าจะเข้าสู่ระบบอีกครั้ง')) {
+                        await syncModules.authMod.signOut(syncAuth);
+                    }
+                    return;
+                }
+                await signInWithGoogle();
+            } catch (err) {
+                console.error(err);
+                alert('ซิงก์ใช้งานไม่ได้ในตอนนี้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
+                setSyncStatus(syncUser ? 'offline' : 'signed-out');
+            }
+        }
+
+        async function initCloudSync() {
+            if (cloudInitStarted) return;
+            cloudInitStarted = true;
+            setSyncStatus('signed-out');
+            updateAuthButton();
+            window.addEventListener('online', () => {
+                refreshSyncStatus(false);
+                if (syncUser && !migrationDone) {
+                    handleAuthChanged(syncUser).catch(err => console.error(err));
+                } else if (cloudSyncEnabled) {
+                    queueCloudPush();
+                }
+            });
+            window.addEventListener('offline', () => refreshSyncStatus(false));
+            if (!isFirebaseConfigured(firebaseConfig)) return;
+            try {
+                const appMod = await import(FIREBASE_CDN + '/firebase-app.js');
+                const authMod = await import(FIREBASE_CDN + '/firebase-auth.js');
+                const fsMod = await import(FIREBASE_CDN + '/firebase-firestore.js');
+                const app = appMod.initializeApp(firebaseConfig);
+                syncAuth = authMod.getAuth(app);
+                syncAuth.useDeviceLanguage();
+                try {
+                    // Single-tab persistent cache. Phone and computer each have
+                    // their own browser, so offline writes still sync later.
+                    // Multi-tab persistence can leave hasPendingWrites stuck.
+                    syncDb = fsMod.initializeFirestore(app, {
+                        localCache: fsMod.persistentLocalCache()
+                    });
+                } catch (persistErr) {
+                    console.warn('Firestore persistent cache unavailable', persistErr);
+                    try {
+                        syncDb = fsMod.initializeFirestore(app, { localCache: fsMod.memoryLocalCache() });
+                    } catch (memoryErr) {
+                        syncDb = fsMod.getFirestore(app);
+                    }
+                }
+                if (emulatorRequested()) {
+                    authMod.connectAuthEmulator(syncAuth, 'http://127.0.0.1:9099', { disableWarnings: true });
+                    fsMod.connectFirestoreEmulator(syncDb, '127.0.0.1', 8080);
+                }
+                syncModules = { authMod: authMod, fsMod: fsMod };
+                try {
+                    await authMod.getRedirectResult(syncAuth);
+                } catch (redirectErr) {
+                    console.error(redirectErr);
+                }
+                authMod.onAuthStateChanged(syncAuth, user => {
+                    handleAuthChanged(user).catch(err => {
+                        console.error(err);
+                        setSyncStatus(syncUser ? 'offline' : 'signed-out');
+                    });
+                });
+            } catch (err) {
+                console.error(err);
+                syncAuth = null;
+                syncDb = null;
+                syncModules = null;
+                setSyncStatus('signed-out');
+            }
+        }
     </script>
 </body>
 </html>
