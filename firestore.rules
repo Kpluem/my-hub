@@ -1,0 +1,21 @@
+rules_version = '2';
+// FinTrack: each person can read and write only their own tree.
+//   users/{userId}
+//   users/{userId}/accounts|transactions|recurringBills|installments|investments/{id}
+// Publish: Firebase console → Firestore → Rules, or
+//   firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
