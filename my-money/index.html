@@ -1404,6 +1404,11 @@
             measurementId: "G-G0KELMYC3M"
         };
 
+        // Home-screen sign-in uses this existing Firebase web client. The owner must
+        // add HOME_SCREEN_REDIRECT_URI to that client's Authorized redirect URIs.
+        const GOOGLE_OAUTH_CLIENT_ID = "414822911348-kdtlqhru0kb157qcobrqc9eu2v1ei4gc.apps.googleusercontent.com";
+        const HOME_SCREEN_REDIRECT_URI = "https://kpluem.github.io/my-hub/my-money/index.html";
+
         const FIREBASE_VERSION = '11.10.0';
         const FIREBASE_CDN = 'https://www.gstatic.com/firebasejs/' + FIREBASE_VERSION;
 
@@ -3645,19 +3650,27 @@
             }
         }
 
-        // signInWithRedirect stores the result on authDomain (fintrack-17b41.firebaseapp.com).
-        // Safari 16.1+, Chrome 115+ and Firefox 109+ block that third-party storage, so
-        // getRedirectResult comes back null and the phone stays signed out with no error.
-        // GitHub Pages cannot serve /__/auth at the origin root, so the auth helper
-        // cannot be self-hosted here. Popup is same-gesture and stays on this origin.
-        // Redirect is only for iOS home-screen mode, where window.open does not exist,
-        // and for an explicit popup-blocked failure.
+        // Browser tabs use signInWithPopup. Home-screen apps cannot: iOS standalone
+        // drops popups, and signInWithRedirect depends on third-party storage at
+        // fintrack-17b41.firebaseapp.com. GitHub Pages cannot host /__/auth.
+        // A home-screen tap instead navigates to Google and returns to this page
+        // with an ID token, then signInWithCredential uses the same Firebase user.
         const AUTH_REDIRECT_KEY = 'fintrack_auth_redirect_pending';
+        const HOME_AUTH_KEY = 'fintrack_home_google_auth';
 
         function isIosDevice() {
             try {
                 const ua = navigator.userAgent || '';
                 return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function isHomeScreenApp() {
+            try {
+                if (window.navigator.standalone === true) return true;
+                return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
             } catch (err) {
                 return false;
             }
@@ -3694,6 +3707,7 @@
             if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') return 'เปิดหน้าต่างเข้าสู่ระบบไม่ได้ ลองอนุญาตป๊อปอัปแล้วกดซิงก์อีกครั้ง';
             if (code === 'auth/network-request-failed') return 'เชื่อมต่อ Google ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
             if (code === 'auth/web-storage-unsupported') return 'เบราว์เซอร์บล็อกที่เก็บข้อมูล จึงเข้าสู่ระบบไม่ได้';
+            if (code === 'auth/invalid-credential' || code === 'auth/invalid-id-token') return 'เข้าสู่ระบบไม่สำเร็จ Google ไม่ยืนยันบัญชีนี้ ลองกดซิงก์อีกครั้ง';
             if (isIosStandalonePwa()) return 'โหมดไอคอนหน้าจอโฮมเข้าสู่ระบบ Google ไม่สำเร็จ เปิดหน้านี้ใน Safari แล้วกดซิงก์';
             return 'เข้าสู่ระบบไม่สำเร็จ ข้อมูลในเครื่องยังอยู่เหมือนเดิม';
         }
@@ -4520,6 +4534,104 @@
             setSyncStatus('signed-out');
         }
 
+        function base64UrlEncode(bytes) {
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+        }
+
+        function randomUrlToken(byteLength) {
+            const bytes = new Uint8Array(byteLength);
+            crypto.getRandomValues(bytes);
+            return base64UrlEncode(bytes);
+        }
+
+        function decodeJwtPayload(token) {
+            const part = String(token || '').split('.')[1] || '';
+            const padLength = (4 - (part.length % 4)) % 4;
+            const padded = part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(padLength);
+            const bytes = Uint8Array.from(atob(padded), ch => ch.charCodeAt(0));
+            return JSON.parse(new TextDecoder().decode(bytes));
+        }
+
+        function readHomeAuthRecord() {
+            try {
+                return JSON.parse(sessionStorage.getItem(HOME_AUTH_KEY) || localStorage.getItem(HOME_AUTH_KEY) || 'null');
+            } catch (err) {
+                return null;
+            }
+        }
+
+        function clearHomeAuthRecord() {
+            try { sessionStorage.removeItem(HOME_AUTH_KEY); } catch (err) {}
+            try { localStorage.removeItem(HOME_AUTH_KEY); } catch (err) {}
+        }
+
+        function beginHomeScreenGoogleSignIn() {
+            clearSyncError();
+            setSyncStatus('syncing');
+            try {
+                const state = randomUrlToken(16);
+                const nonce = randomUrlToken(16);
+                const record = JSON.stringify({ state: state, nonce: nonce });
+                try { sessionStorage.setItem(HOME_AUTH_KEY, record); } catch (err) {}
+                try { localStorage.setItem(HOME_AUTH_KEY, record); } catch (err) {}
+                const params = new URLSearchParams({
+                    client_id: GOOGLE_OAUTH_CLIENT_ID,
+                    redirect_uri: HOME_SCREEN_REDIRECT_URI,
+                    response_type: 'id_token',
+                    scope: 'openid email profile',
+                    nonce: nonce,
+                    state: state,
+                    prompt: 'select_account'
+                });
+                location.assign('https://accounts.google.com/o/oauth2/v2/auth?' + params.toString());
+            } catch (err) {
+                console.error(err);
+                clearHomeAuthRecord();
+                showSyncError('เปิดหน้าเข้าสู่ระบบ Google ไม่ได้ ลองกดซิงก์อีกครั้ง');
+                setSyncStatus('signed-out');
+            }
+        }
+
+        async function completeHomeScreenGoogleSignIn(authMod) {
+            const hash = location.hash.indexOf('#') === 0 ? location.hash.slice(1) : '';
+            if (!hash || (hash.indexOf('id_token=') === -1 && hash.indexOf('error=') === -1)) return;
+            const params = new URLSearchParams(hash);
+            const idToken = params.get('id_token');
+            const returnedState = params.get('state');
+            const oauthError = params.get('error');
+            const saved = readHomeAuthRecord();
+            clearHomeAuthRecord();
+            try { history.replaceState(null, '', location.pathname + location.search); } catch (err) {}
+            if (oauthError) {
+                showSyncError(oauthError === 'access_denied' ? 'ยกเลิกการเข้าสู่ระบบแล้ว' : 'เข้าสู่ระบบ Google ไม่สำเร็จ ลองกดซิงก์อีกครั้ง');
+                setSyncStatus('signed-out');
+                return;
+            }
+            let nonceOk = false;
+            try {
+                const payload = decodeJwtPayload(idToken);
+                nonceOk = !!(saved && idToken && saved.state === returnedState && payload && payload.nonce === saved.nonce);
+            } catch (err) {
+                nonceOk = false;
+            }
+            if (!nonceOk) {
+                showSyncError('เข้าสู่ระบบไม่สำเร็จ ลองกดซิงก์อีกครั้ง');
+                setSyncStatus('signed-out');
+                return;
+            }
+            try {
+                const credential = authMod.GoogleAuthProvider.credential(idToken);
+                await authMod.signInWithCredential(syncAuth, credential);
+                clearSyncError();
+            } catch (err) {
+                console.error(err);
+                showSyncError(authErrorMessage(err));
+                setSyncStatus('signed-out');
+            }
+        }
+
         function signInWithGoogle() {
             if (!syncModules || !syncAuth) return;
             const authMod = syncModules.authMod;
@@ -4527,8 +4639,8 @@
             provider.setCustomParameters({ prompt: 'select_account' });
             clearSyncError();
             setSyncStatus('syncing');
-            if (isIosStandalonePwa()) {
-                beginRedirectSignIn(authMod, provider);
+            if (isHomeScreenApp()) {
+                beginHomeScreenGoogleSignIn();
                 return;
             }
             let pending;
@@ -4610,6 +4722,13 @@
                     fsMod.connectFirestoreEmulator(syncDb, '127.0.0.1', 8080);
                 }
                 syncModules = { authMod: authMod, fsMod: fsMod };
+                authMod.onAuthStateChanged(syncAuth, user => {
+                    handleAuthChanged(user).catch(err => {
+                        console.error(err);
+                        setSyncStatus(syncUser ? 'offline' : 'signed-out');
+                    });
+                });
+                await completeHomeScreenGoogleSignIn(authMod);
                 let redirectResult = null;
                 let redirectErr = null;
                 try {
@@ -4630,12 +4749,6 @@
                 } else if (redirectWasPending) {
                     showSyncError(redirectFailedMessage());
                 }
-                authMod.onAuthStateChanged(syncAuth, user => {
-                    handleAuthChanged(user).catch(err => {
-                        console.error(err);
-                        setSyncStatus(syncUser ? 'offline' : 'signed-out');
-                    });
-                });
             } catch (err) {
                 console.error(err);
                 syncAuth = null;
