@@ -213,6 +213,8 @@
                 </div>
             </div>
 
+            <p id="sync-error" role="alert" class="hidden mt-1 mb-2 text-[11px] leading-relaxed font-bold text-rose-700 bg-rose-50 border border-rose-200/80 rounded-2xl px-3 py-2"></p>
+
             <!-- TIER 2: Desktop Sub-Navigation Bar -->
             <div class="hidden lg:flex items-center justify-between py-2.5 border-t border-slate-200/50">
                 <nav class="flex items-center gap-1.5 bg-white/80 p-1 rounded-full border border-slate-200/70 shadow-2xs">
@@ -3643,18 +3645,62 @@
             }
         }
 
-        function prefersRedirectSignIn() {
+        // signInWithRedirect stores the result on authDomain (fintrack-17b41.firebaseapp.com).
+        // Safari 16.1+, Chrome 115+ and Firefox 109+ block that third-party storage, so
+        // getRedirectResult comes back null and the phone stays signed out with no error.
+        // GitHub Pages cannot serve /__/auth at the origin root, so the auth helper
+        // cannot be self-hosted here. Popup is same-gesture and stays on this origin.
+        // Redirect is only for iOS home-screen mode, where window.open does not exist,
+        // and for an explicit popup-blocked failure.
+        const AUTH_REDIRECT_KEY = 'fintrack_auth_redirect_pending';
+
+        function isIosDevice() {
             try {
                 const ua = navigator.userAgent || '';
-                const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if (!iOS) return false;
-                const standalone = window.navigator.standalone === true
-                    || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-                const safari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome/i.test(ua);
-                return !!(standalone || safari);
+                return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             } catch (err) {
                 return false;
             }
+        }
+
+        function isIosStandalonePwa() {
+            try {
+                if (!isIosDevice()) return false;
+                const standalone = window.navigator.standalone === true
+                    || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+                return !!standalone;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function showSyncError(message) {
+            const el = document.getElementById('sync-error');
+            if (!el) return;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        function clearSyncError() {
+            const el = document.getElementById('sync-error');
+            if (!el) return;
+            el.textContent = '';
+            el.classList.add('hidden');
+        }
+
+        function authErrorMessage(err) {
+            const code = err && err.code || '';
+            if (code === 'auth/unauthorized-domain') return 'โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase จึงเข้าสู่ระบบไม่ได้';
+            if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') return 'เปิดหน้าต่างเข้าสู่ระบบไม่ได้ ลองอนุญาตป๊อปอัปแล้วกดซิงก์อีกครั้ง';
+            if (code === 'auth/network-request-failed') return 'เชื่อมต่อ Google ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+            if (code === 'auth/web-storage-unsupported') return 'เบราว์เซอร์บล็อกที่เก็บข้อมูล จึงเข้าสู่ระบบไม่ได้';
+            if (isIosStandalonePwa()) return 'โหมดไอคอนหน้าจอโฮมเข้าสู่ระบบ Google ไม่สำเร็จ เปิดหน้านี้ใน Safari แล้วกดซิงก์';
+            return 'เข้าสู่ระบบไม่สำเร็จ ข้อมูลในเครื่องยังอยู่เหมือนเดิม';
+        }
+
+        function redirectFailedMessage() {
+            if (isIosStandalonePwa()) return 'โหมดไอคอนหน้าจอโฮมเข้าสู่ระบบ Google ไม่สำเร็จ เปิดหน้านี้ใน Safari แล้วกดซิงก์';
+            return 'เข้าสู่ระบบไม่สำเร็จ เบราว์เซอร์บล็อกการเปลี่ยนหน้า ลองกดซิงก์อีกครั้ง';
         }
 
         function setSyncStatus(state) {
@@ -4420,6 +4466,7 @@
                 setSyncStatus('signed-out');
                 return;
             }
+            clearSyncError();
             setSyncStatus(navigator.onLine ? 'syncing' : 'offline');
             try {
                 const cloud = await fetchCloud(user.uid);
@@ -4434,59 +4481,89 @@
             }
         }
 
-        async function signInWithGoogle() {
+        function beginRedirectSignIn(authMod, provider) {
+            try { sessionStorage.setItem(AUTH_REDIRECT_KEY, '1'); } catch (err) {}
+            let pending;
+            try {
+                pending = authMod.signInWithRedirect(syncAuth, provider);
+            } catch (err) {
+                try { sessionStorage.removeItem(AUTH_REDIRECT_KEY); } catch (storageErr) {}
+                console.error(err);
+                showSyncError(authErrorMessage(err));
+                setSyncStatus('signed-out');
+                return;
+            }
+            Promise.resolve(pending).catch(err => {
+                try { sessionStorage.removeItem(AUTH_REDIRECT_KEY); } catch (storageErr) {}
+                console.error(err);
+                showSyncError(authErrorMessage(err));
+                setSyncStatus('signed-out');
+            });
+        }
+
+        function handlePopupFailure(authMod, provider, err) {
+            const code = err && err.code;
+            if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+                clearSyncError();
+                setSyncStatus('signed-out');
+                return;
+            }
+            const canRedirect = code === 'auth/popup-blocked'
+                || code === 'auth/operation-not-supported-in-this-environment'
+                || code === 'auth/web-storage-unsupported';
+            if (canRedirect) {
+                beginRedirectSignIn(authMod, provider);
+                return;
+            }
+            console.error(err);
+            showSyncError(authErrorMessage(err));
+            setSyncStatus('signed-out');
+        }
+
+        function signInWithGoogle() {
             if (!syncModules || !syncAuth) return;
             const authMod = syncModules.authMod;
             const provider = new authMod.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
+            clearSyncError();
             setSyncStatus('syncing');
-            try {
-                if (prefersRedirectSignIn()) {
-                    await authMod.signInWithRedirect(syncAuth, provider);
-                    return;
-                }
-                await authMod.signInWithPopup(syncAuth, provider);
-            } catch (err) {
-                const code = err && err.code;
-                const canRedirect = code === 'auth/popup-blocked'
-                    || code === 'auth/operation-not-supported-in-this-environment'
-                    || code === 'auth/web-storage-unsupported';
-                if (canRedirect) {
-                    try {
-                        await authMod.signInWithRedirect(syncAuth, provider);
-                        return;
-                    } catch (redirectErr) {
-                        console.error(redirectErr);
-                    }
-                }
-                if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
-                    console.error(err);
-                    alert('เข้าสู่ระบบไม่สำเร็จ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
-                }
-                refreshSyncStatus(false);
+            if (isIosStandalonePwa()) {
+                beginRedirectSignIn(authMod, provider);
+                return;
             }
+            let pending;
+            try {
+                pending = authMod.signInWithPopup(syncAuth, provider);
+            } catch (err) {
+                handlePopupFailure(authMod, provider, err);
+                return;
+            }
+            Promise.resolve(pending).catch(err => handlePopupFailure(authMod, provider, err));
         }
 
-        async function handleSyncAuthClick() {
+        function handleSyncAuthClick() {
             try {
                 if (!isFirebaseConfigured(firebaseConfig)) {
-                    alert('ยังไม่ได้ใส่ค่า Firebase\n\nเปิด my-money/index.html แล้วแทนที่ค่า TODO ใน firebaseConfig\nจากนั้นเผยแพร่ Firestore rules และเพิ่ม kpluem.github.io ใน Authorized domains\n\nตอนนี้ข้อมูลยังถูกเก็บในเครื่องนี้ตามเดิม');
+                    showSyncError('ยังไม่ได้ใส่ค่า Firebase จึงซิงก์ไม่ได้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
                     return;
                 }
                 if (!syncAuth || !syncModules) {
-                    alert('ยังเชื่อมต่อบริการซิงก์ไม่ได้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
+                    showSyncError('ยังเชื่อมต่อบริการซิงก์ไม่ได้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
                     return;
                 }
                 if (syncUser) {
                     if (confirm('ออกจากระบบ Google? ข้อมูลในเครื่องนี้จะยังอยู่ และจะไม่ซิงก์จนกว่าจะเข้าสู่ระบบอีกครั้ง')) {
-                        await syncModules.authMod.signOut(syncAuth);
+                        syncModules.authMod.signOut(syncAuth).catch(err => {
+                            console.error(err);
+                            showSyncError('ออกจากระบบไม่สำเร็จ');
+                        });
                     }
                     return;
                 }
-                await signInWithGoogle();
+                signInWithGoogle();
             } catch (err) {
                 console.error(err);
-                alert('ซิงก์ใช้งานไม่ได้ในตอนนี้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
+                showSyncError('ซิงก์ใช้งานไม่ได้ในตอนนี้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
                 setSyncStatus(syncUser ? 'offline' : 'signed-out');
             }
         }
@@ -4533,10 +4610,25 @@
                     fsMod.connectFirestoreEmulator(syncDb, '127.0.0.1', 8080);
                 }
                 syncModules = { authMod: authMod, fsMod: fsMod };
+                let redirectResult = null;
+                let redirectErr = null;
                 try {
-                    await authMod.getRedirectResult(syncAuth);
-                } catch (redirectErr) {
-                    console.error(redirectErr);
+                    redirectResult = await authMod.getRedirectResult(syncAuth);
+                } catch (err) {
+                    redirectErr = err;
+                    console.error(err);
+                }
+                let redirectWasPending = false;
+                try {
+                    redirectWasPending = sessionStorage.getItem(AUTH_REDIRECT_KEY) === '1';
+                    sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+                } catch (err) {}
+                if (redirectResult && redirectResult.user) {
+                    clearSyncError();
+                } else if (redirectErr) {
+                    showSyncError(authErrorMessage(redirectErr));
+                } else if (redirectWasPending) {
+                    showSyncError(redirectFailedMessage());
                 }
                 authMod.onAuthStateChanged(syncAuth, user => {
                     handleAuthChanged(user).catch(err => {
@@ -4549,6 +4641,7 @@
                 syncAuth = null;
                 syncDb = null;
                 syncModules = null;
+                showSyncError('ยังเชื่อมต่อบริการซิงก์ไม่ได้ ข้อมูลในเครื่องยังอยู่เหมือนเดิม');
                 setSyncStatus('signed-out');
             }
         }
