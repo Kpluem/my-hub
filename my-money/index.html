@@ -260,6 +260,44 @@
                 display: none;
             }
         }
+        .brand-strip-track {
+            overscroll-behavior-x: contain;
+            touch-action: manipulation;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .brand-strip-track {
+                scroll-behavior: smooth;
+            }
+        }
+        .brand-scroll-btn {
+            inline-size: 28px;
+            block-size: 28px;
+            border-radius: 9999px;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #334155;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            touch-action: manipulation;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+        }
+        .brand-scroll-btn:hover:not(:disabled) {
+            background: #EEF2FF;
+            border-color: #818CF8;
+            color: #3730A3;
+        }
+        .brand-scroll-btn:focus-visible {
+            outline: 2px solid #4F46E5;
+            outline-offset: 2px;
+        }
+        .brand-scroll-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            background: #F8FAFC;
+            border-color: #E2E8F0;
+            color: #94A3B8;
+        }
 
         /* Native <dialog> modal & mobile bottom-sheet styles (display scoped to [open]) */
         dialog.app-dialog {
@@ -1080,11 +1118,27 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-[11px] font-bold text-slate-400">คลิกเลือกแบรนด์เพื่อเปลี่ยนชื่อและรูป</span>
-                            <button type="button" onclick="toggleCustomLogoInput('rec')" class="text-[11px] font-bold text-amber-600 hover:underline">ใส่ลิงก์รูปเอง</button>
+                            <span class="text-[11px] font-bold text-slate-400">เลือกแบรนด์ยอดนิยม หรือวางลิงก์เว็บเพื่อดึงไอคอน</span>
                         </div>
-                        <div id="rec-brand-presets" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
-                        <input type="url" id="rec-logo-url" oninput="updateBrandPreviewFromInput('rec')" placeholder="วาง URL รูปโลโก้ (https://...)" class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="rec-brand-prev" onclick="scrollBrandPresets('rec', -1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ก่อนหน้า" title="เลื่อนซ้าย">
+                                <i class="fa-solid fa-chevron-left text-[10px]" aria-hidden="true"></i>
+                            </button>
+                            <div id="rec-brand-presets" class="brand-strip-track flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+                            <button type="button" id="rec-brand-next" onclick="scrollBrandPresets('rec', 1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ถัดไป" title="เลื่อนขวา">
+                                <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" aria-hidden="true"></i>
+                                <input type="text" id="rec-logo-url" oninput="updateBrandPreviewFromInput('rec')" placeholder="วางลิงก์เว็บ (เช่น netflix.com) หรือ URL รูปโลโก้..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <button type="button" onclick="pasteLogoUrl('rec')" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-[11px] font-bold transition" title="วางลิงก์จากคลิปบอร์ดเพื่อดึงไอคอนอัตโนมัติ">
+                                <i class="fa-regular fa-paste text-[10px]" aria-hidden="true"></i> วาง URL
+                            </button>
+                        </div>
+                        <p id="rec-logo-status" class="hidden mt-1 text-[10px] font-semibold text-emerald-600"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -1258,11 +1312,27 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-[11px] font-bold text-slate-400">คลิกเลือกแบรนด์เพื่อเปลี่ยนชื่อและรูป</span>
-                            <button type="button" onclick="toggleCustomLogoInput('tx')" class="text-[11px] font-bold text-violet-600 hover:underline">ใส่ลิงก์รูปเอง</button>
+                            <span class="text-[11px] font-bold text-slate-400">เลือกแบรนด์ยอดนิยม หรือวางลิงก์เว็บเพื่อดึงไอคอน</span>
                         </div>
-                        <div id="tx-brand-presets" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
-                        <input type="url" id="tx-logo-url" oninput="updateBrandPreviewFromInput('tx')" placeholder="วาง URL รูปโลโก้ (https://...)" class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="tx-brand-prev" onclick="scrollBrandPresets('tx', -1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ก่อนหน้า" title="เลื่อนซ้าย">
+                                <i class="fa-solid fa-chevron-left text-[10px]" aria-hidden="true"></i>
+                            </button>
+                            <div id="tx-brand-presets" class="brand-strip-track flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+                            <button type="button" id="tx-brand-next" onclick="scrollBrandPresets('tx', 1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ถัดไป" title="เลื่อนขวา">
+                                <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" aria-hidden="true"></i>
+                                <input type="text" id="tx-logo-url" oninput="updateBrandPreviewFromInput('tx')" placeholder="วางลิงก์เว็บ (เช่น grab.com, uniqlo.com) หรือ URL รูป..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <button type="button" onclick="pasteLogoUrl('tx')" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-[11px] font-bold transition" title="วางลิงก์จากคลิปบอร์ดเพื่อดึงไอคอนอัตโนมัติ">
+                                <i class="fa-regular fa-paste text-[10px]" aria-hidden="true"></i> วาง URL
+                            </button>
+                        </div>
+                        <p id="tx-logo-status" class="hidden mt-1 text-[10px] font-semibold text-emerald-600"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -1318,11 +1388,27 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-[11px] font-bold text-slate-400">คลิกเลือกแบรนด์สินค้าเพื่อเปลี่ยนชื่อและรูป</span>
-                            <button type="button" onclick="toggleCustomLogoInput('inst')" class="text-[11px] font-bold text-violet-600 hover:underline">ใส่ลิงก์รูปเอง</button>
+                            <span class="text-[11px] font-bold text-slate-400">เลือกแบรนด์สินค้า หรือวางลิงก์เว็บเพื่อดึงไอคอน</span>
                         </div>
-                        <div id="inst-brand-presets" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
-                        <input type="url" id="inst-logo-url" oninput="updateBrandPreviewFromInput('inst')" placeholder="วาง URL รูปโลโก้ (https://...)" class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="inst-brand-prev" onclick="scrollBrandPresets('inst', -1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ก่อนหน้า" title="เลื่อนซ้าย">
+                                <i class="fa-solid fa-chevron-left text-[10px]" aria-hidden="true"></i>
+                            </button>
+                            <div id="inst-brand-presets" class="brand-strip-track flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+                            <button type="button" id="inst-brand-next" onclick="scrollBrandPresets('inst', 1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ถัดไป" title="เลื่อนขวา">
+                                <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" aria-hidden="true"></i>
+                                <input type="text" id="inst-logo-url" oninput="updateBrandPreviewFromInput('inst')" placeholder="วางลิงก์เว็บ (เช่น apple.com, dyson.co.th) หรือ URL รูป..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <button type="button" onclick="pasteLogoUrl('inst')" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-[11px] font-bold transition" title="วางลิงก์จากคลิปบอร์ดเพื่อดึงไอคอนอัตโนมัติ">
+                                <i class="fa-regular fa-paste text-[10px]" aria-hidden="true"></i> วาง URL
+                            </button>
+                        </div>
+                        <p id="inst-logo-status" class="hidden mt-1 text-[10px] font-semibold text-emerald-600"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -1412,11 +1498,27 @@
 
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-[11px] font-bold text-slate-400">คลิกเลือกธนาคาร/แพลตฟอร์มเพื่อเปลี่ยนชื่อและรูป</span>
-                            <button type="button" onclick="toggleCustomLogoInput('inv')" class="text-[11px] font-bold text-teal-600 hover:underline">ใส่ลิงก์รูปเอง</button>
+                            <span class="text-[11px] font-bold text-slate-400">เลือกธนาคาร/แพลตฟอร์ม หรือวางลิงก์เว็บเพื่อดึงไอคอน</span>
                         </div>
-                        <div id="inv-brand-presets" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
-                        <input type="url" id="inv-logo-url" oninput="updateBrandPreviewFromInput('inv')" placeholder="วาง URL รูปโลโก้ (https://...)" class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="inv-brand-prev" onclick="scrollBrandPresets('inv', -1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ก่อนหน้า" title="เลื่อนซ้าย">
+                                <i class="fa-solid fa-chevron-left text-[10px]" aria-hidden="true"></i>
+                            </button>
+                            <div id="inv-brand-presets" class="brand-strip-track flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+                            <button type="button" id="inv-brand-next" onclick="scrollBrandPresets('inv', 1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูแบรนด์ถัดไป" title="เลื่อนขวา">
+                                <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" aria-hidden="true"></i>
+                                <input type="text" id="inv-logo-url" oninput="updateBrandPreviewFromInput('inv')" placeholder="วางลิงก์เว็บ (เช่น dime.co.th, finnomena.com) หรือ URL รูป..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <button type="button" onclick="pasteLogoUrl('inv')" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-[11px] font-bold transition" title="วางลิงก์จากคลิปบอร์ดเพื่อดึงไอคอนอัตโนมัติ">
+                                <i class="fa-regular fa-paste text-[10px]" aria-hidden="true"></i> วาง URL
+                            </button>
+                        </div>
+                        <p id="inv-logo-status" class="hidden mt-1 text-[10px] font-semibold text-emerald-600"></p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -1477,9 +1579,26 @@
                         </div>
                     </div>
                     <div>
-                        <span class="text-[11px] font-bold text-slate-400 block mb-1">คลิกเลือกธนาคาร/เครือข่ายบัตร (ชื่อและโลโก้จะเปลี่ยนตามทันที)</span>
-                        <div id="acc-brand-presets" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
-                        <input type="url" id="acc-logo-url" oninput="updateBrandPreviewFromInput('acc')" placeholder="วาง URL รูปโลโก้" class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        <span class="text-[11px] font-bold text-slate-400 block mb-1">เลือกธนาคาร/บัตร หรือวางลิงก์เว็บเพื่อดึงไอคอน</span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="acc-brand-prev" onclick="scrollBrandPresets('acc', -1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูธนาคารก่อนหน้า" title="เลื่อนซ้าย">
+                                <i class="fa-solid fa-chevron-left text-[10px]" aria-hidden="true"></i>
+                            </button>
+                            <div id="acc-brand-presets" class="brand-strip-track flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+                            <button type="button" id="acc-brand-next" onclick="scrollBrandPresets('acc', 1)" class="brand-scroll-btn hidden sm:inline-flex" aria-label="เลื่อนดูธนาคารถัดไป" title="เลื่อนขวา">
+                                <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" aria-hidden="true"></i>
+                                <input type="text" id="acc-logo-url" oninput="updateBrandPreviewFromInput('acc')" placeholder="วางลิงก์เว็บธนาคาร (เช่น uob.co.th, wise.com) หรือ URL รูป..." class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs focus:outline-none focus:border-indigo-500 transition">
+                            </div>
+                            <button type="button" onclick="pasteLogoUrl('acc')" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-[11px] font-bold transition" title="วางลิงก์จากคลิปบอร์ดเพื่อดึงไอคอนอัตโนมัติ">
+                                <i class="fa-regular fa-paste text-[10px]" aria-hidden="true"></i> วาง URL
+                            </button>
+                        </div>
+                        <p id="acc-logo-status" class="hidden mt-1 text-[10px] font-semibold text-emerald-600"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -1730,6 +1849,9 @@
             const dlg = document.getElementById(id);
             if (!dlg || dlg.open) return;
             dlg.showModal();
+            requestAnimationFrame(() => {
+                if (typeof updateAllBrandScrollControls === 'function') updateAllBrandScrollControls();
+            });
         }
         function closeDialogById(id) {
             const dlg = document.getElementById(id);
@@ -1766,43 +1888,206 @@
         }
 
         // ==========================================
-        // 1. REAL BRAND LOGOS DIRECTORY
+        // 1. REAL BRAND LOGOS DIRECTORY & SMART URL ICON RESOLVER
         // ==========================================
+        const brandFavicon = (domain) => `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+
         const BRAND_CATALOG = [
-            { id: 'netflix', name: 'Netflix', keywords: ['netflix', 'เน็ตฟลิกซ์'], url: 'https://cdn.simpleicons.org/netflix/E50914', bg: '#000000' },
-            { id: 'youtube', name: 'YouTube', keywords: ['youtube', 'ยูทูป'], url: 'https://cdn.simpleicons.org/youtube/FF0000', bg: '#FFF1F2' },
+            // Streaming, Music & Gaming
+            { id: 'netflix', name: 'Netflix', keywords: ['netflix', 'เน็ตฟลิกซ์'], url: 'https://cdn.simpleicons.org/netflix/E50914', bg: '#FFF1F2' },
+            { id: 'youtube', name: 'YouTube', keywords: ['youtube', 'ยูทูป', 'yt premium'], url: 'https://cdn.simpleicons.org/youtube/FF0000', bg: '#FFF1F2' },
             { id: 'spotify', name: 'Spotify', keywords: ['spotify', 'สปอติฟาย'], url: 'https://cdn.simpleicons.org/spotify/1DB954', bg: '#ECFDF5' },
-            { id: 'apple', name: 'Apple / iCloud', keywords: ['apple', 'iphone', 'ipad', 'macbook', 'icloud', 'airpods'], url: 'https://cdn.simpleicons.org/apple/1E293B', bg: '#F1F5F9' },
-            { id: 'playstation', name: 'PlayStation', keywords: ['ps5', 'playstation', 'sony'], url: 'https://cdn.simpleicons.org/playstation/00439C', bg: '#EFF6FF' },
+            { id: 'disney', name: 'Disney+', keywords: ['disney', 'ดิสนีย์', 'hotstar'], url: brandFavicon('disneyplus.com'), bg: '#EFF6FF' },
+            { id: 'max', name: 'Max / HBO', keywords: ['hbo', 'max'], url: brandFavicon('max.com'), bg: '#EEF2FF' },
+            { id: 'prime', name: 'Prime Video', keywords: ['prime', 'amazon'], url: brandFavicon('primevideo.com'), bg: '#F0F9FF' },
+            { id: 'viu', name: 'Viu', keywords: ['viu', 'วิว'], url: brandFavicon('viu.com'), bg: '#FFFBEB' },
+            { id: 'iqiyi', name: 'iQIYI', keywords: ['iqiyi', 'อ้ายฉีอี้'], url: brandFavicon('iq.com'), bg: '#ECFDF5' },
+            { id: 'apple', name: 'Apple / iCloud', keywords: ['apple', 'iphone', 'ipad', 'macbook', 'icloud', 'airpods', 'apple music', 'app store'], url: 'https://cdn.simpleicons.org/apple/1E293B', bg: '#F1F5F9' },
+            { id: 'playstation', name: 'PlayStation', keywords: ['ps5', 'ps4', 'playstation', 'sony', 'ps plus'], url: 'https://cdn.simpleicons.org/playstation/00439C', bg: '#EFF6FF' },
             { id: 'nintendo', name: 'Nintendo', keywords: ['nintendo', 'switch'], url: 'https://cdn.simpleicons.org/nintendo/E60012', bg: '#FEF2F2' },
             { id: 'steam', name: 'Steam', keywords: ['steam', 'เกม'], url: 'https://cdn.simpleicons.org/steam/000000', bg: '#F1F5F9' },
-            { id: 'samsung', name: 'Samsung', keywords: ['samsung', 'galaxy'], url: 'https://cdn.simpleicons.org/samsung/1428A0', bg: '#EFF6FF' },
-            { id: 'shopee', name: 'Shopee', keywords: ['shopee', 'ช้อปปี้'], url: 'https://cdn.simpleicons.org/shopee/EE4D2D', bg: '#FFF7ED' },
-            { id: 'starbucks', name: 'Starbucks', keywords: ['starbucks', 'สตาร์บัค', 'กาแฟ', 'cafe', 'coffee'], url: 'https://cdn.simpleicons.org/starbucks/006241', bg: '#ECFDF5' },
-            { id: '7eleven', name: '7-Eleven', keywords: ['7-11', '7-eleven', 'เซเว่น', 'cp all'], url: 'https://cdn.simpleicons.org/7eleven/008061', bg: '#ECFDF5' },
-            { id: 'grab', name: 'Grab', keywords: ['grab', 'แกร็บ'], url: 'https://cdn.simpleicons.org/grab/00B14F', bg: '#ECFDF5' },
-            { id: 'line', name: 'LINE', keywords: ['line', 'lineman', 'ไลน์'], url: 'https://cdn.simpleicons.org/line/00C300', bg: '#ECFDF5' },
+            { id: 'discord', name: 'Discord', keywords: ['discord', 'nitro', 'ดิสคอร์ด'], url: 'https://cdn.simpleicons.org/discord/5865F2', bg: '#EEF2FF' },
+            { id: 'tiktok', name: 'TikTok', keywords: ['tiktok', 'ติ๊กต๊อก', 'ติ๊กตอก'], url: 'https://cdn.simpleicons.org/tiktok/000000', bg: '#F8FAFC' },
+
+            // AI & Productivity
+            { id: 'chatgpt', name: 'ChatGPT', keywords: ['chatgpt', 'openai', 'gpt'], url: brandFavicon('chatgpt.com'), bg: '#ECFDF5' },
+            { id: 'claude', name: 'Claude AI', keywords: ['claude', 'anthropic'], url: brandFavicon('claude.ai'), bg: '#FFF7ED' },
+            { id: 'gemini', name: 'Google Gemini', keywords: ['gemini', 'เจมินาย'], url: brandFavicon('gemini.google.com'), bg: '#EFF6FF' },
+            { id: 'google', name: 'Google One', keywords: ['google', 'google one', 'drive', 'workspace'], url: 'https://cdn.simpleicons.org/google/4285F4', bg: '#EFF6FF' },
+            { id: 'canva', name: 'Canva', keywords: ['canva', 'แคนวา'], url: brandFavicon('canva.com'), bg: '#ECFEFF' },
+            { id: 'notion', name: 'Notion', keywords: ['notion', 'โนชัน'], url: 'https://cdn.simpleicons.org/notion/000000', bg: '#F8FAFC' },
+            { id: 'microsoft', name: 'Microsoft 365', keywords: ['microsoft', 'office', '365', 'xbox', 'onedrive'], url: brandFavicon('microsoft.com'), bg: '#EFF6FF' },
+            { id: 'adobe', name: 'Adobe', keywords: ['adobe', 'photoshop', 'lightroom', 'premiere', 'creative cloud'], url: brandFavicon('adobe.com'), bg: '#FEF2F2' },
+            { id: 'github', name: 'GitHub', keywords: ['github', 'copilot'], url: 'https://cdn.simpleicons.org/github/181717', bg: '#F1F5F9' },
+            { id: 'zoom', name: 'Zoom', keywords: ['zoom', 'ซูม'], url: brandFavicon('zoom.us'), bg: '#EFF6FF' },
+
+            // Shopping, Retail & Tech
+            { id: 'shopee', name: 'Shopee', keywords: ['shopee', 'ช้อปปี้', 'spaylater'], url: 'https://cdn.simpleicons.org/shopee/EE4D2D', bg: '#FFF7ED' },
+            { id: 'lazada', name: 'Lazada', keywords: ['lazada', 'ลาซาด้า', 'lazpaylater'], url: brandFavicon('lazada.co.th'), bg: '#EEF2FF' },
+            { id: 'samsung', name: 'Samsung', keywords: ['samsung', 'galaxy', 'ซัมซุง'], url: 'https://cdn.simpleicons.org/samsung/1428A0', bg: '#EFF6FF' },
+            { id: 'dyson', name: 'Dyson', keywords: ['dyson', 'ไดสัน'], url: brandFavicon('dyson.co.th'), bg: '#F8FAFC' },
             { id: 'ikea', name: 'IKEA', keywords: ['ikea', 'อิเกีย', 'โซฟา', 'เฟอร์นิเจอร์'], url: 'https://cdn.simpleicons.org/ikea/0058A3', bg: '#EFF6FF' },
-            { id: 'chatgpt', name: 'ChatGPT', keywords: ['chatgpt', 'openai', 'claude'], url: 'https://cdn.simpleicons.org/openai/10A37F', bg: '#ECFDF5' },
-            { id: 'google', name: 'Google One', keywords: ['google', 'drive'], url: 'https://cdn.simpleicons.org/google/4285F4', bg: '#EFF6FF' },
-            { id: 'ais', name: 'AIS Fibre', keywords: ['ais', 'เอไอเอส', 'เน็ตบ้าน', 'อินเทอร์เน็ต'], url: 'https://ui-avatars.com/api/?name=AIS&background=73C211&color=fff&bold=true&rounded=true&font-size=0.42', bg: '#F7FEE7' },
-            { id: 'true', name: 'True', keywords: ['true', 'ทรู'], url: 'https://ui-avatars.com/api/?name=TRUE&background=E60000&color=fff&bold=true&rounded=true&font-size=0.35', bg: '#FEF2F2' },
-            { id: 'mea', name: 'การไฟฟ้า', keywords: ['ค่าไฟ', 'การไฟฟ้า', 'ไฟฟ้า'], url: 'https://ui-avatars.com/api/?name=MEA&background=F59E0B&color=fff&bold=true&rounded=true&font-size=0.38', bg: '#FFFBEB' },
-            { id: 'mwa', name: 'การประปา', keywords: ['ค่าน้ำ', 'ประปา'], url: 'https://ui-avatars.com/api/?name=MWA&background=0284C7&color=fff&bold=true&rounded=true&font-size=0.38', bg: '#F0F9FF' },
-            { id: 'gold', name: 'Gold / ทองคำ', keywords: ['ทอง', 'ทองคำ', 'gold', 'ฮั่วเซ่งเฮง', 'แม่ทองสุก'], url: 'https://ui-avatars.com/api/?name=GOLD&background=D97706&color=fff&bold=true&rounded=true&font-size=0.34', bg: '#FFFBEB' },
-            { id: 'fund', name: 'S&P500 / ETF', keywords: ['s&p', 'etf', 'กองทุน', 'หุ้น', 'scbs', 'finnomena', 'dime', 'kept'], url: 'https://ui-avatars.com/api/?name=ETF&background=0D9488&color=fff&bold=true&rounded=true&font-size=0.38', bg: '#F0FDFA' }
+            { id: 'uniqlo', name: 'Uniqlo', keywords: ['uniqlo', 'ยูนิโคล่'], url: brandFavicon('uniqlo.com'), bg: '#FEF2F2' },
+            { id: 'zara', name: 'Zara', keywords: ['zara', 'ซาร่า'], url: brandFavicon('zara.com'), bg: '#F8FAFC' },
+            { id: 'hm', name: 'H&M', keywords: ['h&m', 'hm'], url: brandFavicon('hm.com'), bg: '#FEF2F2' },
+            { id: 'nike', name: 'Nike', keywords: ['nike', 'ไนกี้'], url: 'https://cdn.simpleicons.org/nike/111111', bg: '#F8FAFC' },
+            { id: 'adidas', name: 'Adidas', keywords: ['adidas', 'อาดิดาส'], url: 'https://cdn.simpleicons.org/adidas/000000', bg: '#F8FAFC' },
+            { id: 'muji', name: 'MUJI', keywords: ['muji', 'มูจิ'], url: brandFavicon('muji.com'), bg: '#FEF2F2' },
+            { id: 'central', name: 'Central', keywords: ['central', 'เซ็นทรัล', 'robinson'], url: brandFavicon('central.co.th'), bg: '#FEF2F2' },
+            { id: 'homepro', name: 'HomePro', keywords: ['homepro', 'โฮมโปร'], url: brandFavicon('homepro.co.th'), bg: '#EFF6FF' },
+            { id: 'powerbuy', name: 'Power Buy', keywords: ['powerbuy', 'power buy', 'เพาเวอร์บาย'], url: brandFavicon('powerbuy.co.th'), bg: '#EEF2FF' },
+            { id: 'jib', name: 'JIB', keywords: ['jib', 'เจไอบี', 'คอมพิวเตอร์'], url: brandFavicon('jib.co.th'), bg: '#EFF6FF' },
+            { id: 'banana', name: 'BaNANA IT', keywords: ['banana', 'บานาน่า', 'studio7'], url: brandFavicon('bnn.in.th'), bg: '#FFFBEB' },
+            { id: '7eleven', name: '7-Eleven', keywords: ['7-11', '7-eleven', 'เซเว่น', 'cp all', 'all member'], url: 'https://cdn.simpleicons.org/7eleven/008061', bg: '#ECFDF5' },
+            { id: 'lotuss', name: "Lotus's", keywords: ['lotus', 'โลตัส'], url: brandFavicon('lotuss.com'), bg: '#ECFDF5' },
+            { id: 'bigc', name: 'Big C', keywords: ['big c', 'bigc', 'บิ๊กซี'], url: brandFavicon('bigc.co.th'), bg: '#F7FEE7' },
+            { id: 'makro', name: 'Makro', keywords: ['makro', 'แม็คโคร'], url: brandFavicon('makro.pro'), bg: '#FEF2F2' },
+            { id: 'tops', name: 'Tops', keywords: ['tops', 'ท็อปส์'], url: brandFavicon('tops.co.th'), bg: '#FEF2F2' },
+            { id: 'watsons', name: 'Watsons', keywords: ['watsons', 'วัตสัน'], url: brandFavicon('watsons.co.th'), bg: '#ECFEFF' },
+            { id: 'sephora', name: 'Sephora', keywords: ['sephora', 'เซโฟร่า'], url: brandFavicon('sephora.co.th'), bg: '#F8FAFC' },
+
+            // Food, Delivery & Cafe
+            { id: 'grab', name: 'Grab', keywords: ['grab', 'แกร็บ', 'grabfood'], url: 'https://cdn.simpleicons.org/grab/00B14F', bg: '#ECFDF5' },
+            { id: 'line', name: 'LINE / LINE MAN', keywords: ['line', 'lineman', 'ไลน์', 'ไลน์แมน'], url: 'https://cdn.simpleicons.org/line/00C300', bg: '#ECFDF5' },
+            { id: 'foodpanda', name: 'foodpanda', keywords: ['foodpanda', 'ฟู้ดแพนด้า'], url: brandFavicon('foodpanda.co.th'), bg: '#FDF2F8' },
+            { id: 'starbucks', name: 'Starbucks', keywords: ['starbucks', 'สตาร์บัค', 'กาแฟ', 'cafe', 'coffee'], url: brandFavicon('starbucks.co.th'), bg: '#ECFDF5' },
+            { id: 'amazon', name: 'Cafe Amazon', keywords: ['cafe amazon', 'อเมซอน', 'คาเฟ่อเมซอน'], url: brandFavicon('cafe-amazon.com'), bg: '#ECFDF5' },
+            { id: 'mcdonalds', name: "McDonald's", keywords: ['mcdonald', 'แมคโดนัลด์', 'แมค'], url: 'https://cdn.simpleicons.org/mcdonalds/DA291C', bg: '#FEF2F2' },
+            { id: 'kfc', name: 'KFC', keywords: ['kfc', 'เคเอฟซี'], url: 'https://cdn.simpleicons.org/kfc/F40027', bg: '#FEF2F2' },
+            { id: 'mk', name: 'MK', keywords: ['mk', 'เอ็มเค', 'สุกี้'], url: brandFavicon('mkrestaurant.com'), bg: '#FEF2F2' },
+            { id: 'swensens', name: "Swensen's", keywords: ['swensen', 'สเวนเซ่นส์'], url: brandFavicon('swensens1112.com'), bg: '#FEF2F2' },
+
+            // Travel, Fuel, Telecom, Utilities, Health & Invest
+            { id: 'bolt', name: 'Bolt', keywords: ['bolt', 'โบลท์'], url: brandFavicon('bolt.eu'), bg: '#ECFDF5' },
+            { id: 'agoda', name: 'Agoda', keywords: ['agoda', 'อโกด้า', 'โรงแรม'], url: brandFavicon('agoda.com'), bg: '#EFF6FF' },
+            { id: 'booking', name: 'Booking.com', keywords: ['booking', 'บุ๊คกิ้ง'], url: brandFavicon('booking.com'), bg: '#EFF6FF' },
+            { id: 'airbnb', name: 'Airbnb', keywords: ['airbnb', 'แอร์บีเอ็นบี'], url: 'https://cdn.simpleicons.org/airbnb/FF5A5F', bg: '#FFF1F2' },
+            { id: 'airasia', name: 'AirAsia', keywords: ['airasia', 'แอร์เอเชีย', 'ตั๋วเครื่องบิน'], url: brandFavicon('airasia.com'), bg: '#FEF2F2' },
+            { id: 'ptt', name: 'PTT / OR', keywords: ['ptt', 'ปตท', 'น้ำมัน', 'ev station'], url: brandFavicon('pttor.com'), bg: '#EFF6FF' },
+            { id: 'bangchak', name: 'บางจาก', keywords: ['bangchak', 'บางจาก'], url: brandFavicon('bangchak.co.th'), bg: '#ECFDF5' },
+            { id: 'shell', name: 'Shell', keywords: ['shell', 'เชลล์'], url: 'https://cdn.simpleicons.org/shell/DD1D21', bg: '#FFFBEB' },
+            { id: 'ais', name: 'AIS', keywords: ['ais', 'เอไอเอส', 'ais fibre', 'เน็ตบ้าน', 'อินเทอร์เน็ต'], url: brandFavicon('ais.th'), bg: '#F7FEE7' },
+            { id: 'true', name: 'True / dtac', keywords: ['true', 'ทรู', 'dtac', 'ดีแทค'], url: brandFavicon('true.th'), bg: '#FEF2F2' },
+            { id: '3bb', name: '3BB', keywords: ['3bb', 'สามบีบี'], url: brandFavicon('3bb.co.th'), bg: '#FFF7ED' },
+            { id: 'mea', name: 'การไฟฟ้า', keywords: ['ค่าไฟ', 'การไฟฟ้า', 'ไฟฟ้า', 'mea', 'pea'], url: brandFavicon('mea.or.th'), bg: '#FFFBEB' },
+            { id: 'mwa', name: 'การประปา', keywords: ['ค่าน้ำ', 'ประปา', 'mwa', 'pwa'], url: brandFavicon('mwa.co.th'), bg: '#F0F9FF' },
+            { id: 'fitnessfirst', name: 'Fitness First', keywords: ['fitness', 'ฟิตเนส', 'ยิม', 'gym'], url: brandFavicon('fitnessfirst.co.th'), bg: '#FEF2F2' },
+            { id: 'aia', name: 'AIA ประกัน', keywords: ['aia', 'เอไอเอ', 'ประกัน'], url: brandFavicon('aia.co.th'), bg: '#FEF2F2' },
+            { id: 'gold', name: 'Gold / ทองคำ', keywords: ['ทอง', 'ทองคำ', 'gold', 'ฮั่วเซ่งเฮง', 'แม่ทองสุก'], url: brandFavicon('huasengheng.com'), bg: '#FFFBEB' },
+            { id: 'fund', name: 'กองทุน / ETF', keywords: ['s&p', 'etf', 'กองทุน', 'หุ้น', 'finnomena', 'scbs', 'innovestx'], url: brandFavicon('finnomena.com'), bg: '#F0FDFA' }
         ];
 
         const BANK_LOGOS = [
-            { id: 'kbank', name: 'KBank กสิกรไทย', keywords: ['kbank', 'กสิกร', 'k-plus', 'kplus'], url: 'https://ui-avatars.com/api/?name=KB&background=00A950&color=fff&bold=true&rounded=true&font-size=0.45' },
-            { id: 'scb', name: 'SCB ไทยพาณิชย์', keywords: ['scb', 'ไทยพาณิชย์', 'cardx', 'scbam'], url: 'https://ui-avatars.com/api/?name=SCB&background=4E2A84&color=fff&bold=true&rounded=true&font-size=0.38' },
-            { id: 'ktc', name: 'KTC กรุงไทย', keywords: ['ktc', 'กรุงไทย', 'krungthai', 'เป๋าตัง'], url: 'https://ui-avatars.com/api/?name=KTC&background=00A4E4&color=fff&bold=true&rounded=true&font-size=0.38' },
-            { id: 'krungsri', name: 'Krungsri กรุงศรี', keywords: ['krungsri', 'กรุงศรี', 'first choice', 'kept'], url: 'https://ui-avatars.com/api/?name=BAY&background=FEC43B&color=1E293B&bold=true&rounded=true&font-size=0.38' },
-            { id: 'bbl', name: 'BBL กรุงเทพ', keywords: ['bbl', 'กรุงเทพ', 'bangkok'], url: 'https://ui-avatars.com/api/?name=BBL&background=1E4598&color=fff&bold=true&rounded=true&font-size=0.38' },
-            { id: 'ttb', name: 'ttb ทหารไทยธนชาต', keywords: ['ttb', 'ทีทีบี'], url: 'https://ui-avatars.com/api/?name=ttb&background=0050F0&color=fff&bold=true&rounded=true&font-size=0.4' },
-            { id: 'visa', name: 'Visa', keywords: ['visa', 'วีซ่า'], url: 'https://cdn.simpleicons.org/visa/1A1F71' },
-            { id: 'mastercard', name: 'Mastercard', keywords: ['mastercard', 'titanium'], url: 'https://cdn.simpleicons.org/mastercard/EB001B' }
+            { id: 'kbank', name: 'KBank กสิกรไทย', keywords: ['kbank', 'กสิกร', 'k-plus', 'kplus', 'make by kbank'], url: brandFavicon('kasikornbank.com'), bg: '#ECFDF5' },
+            { id: 'scb', name: 'SCB ไทยพาณิชย์', keywords: ['scb', 'ไทยพาณิชย์', 'cardx', 'scbam', 'mae manee'], url: brandFavicon('scb.co.th'), bg: '#F5F3FF' },
+            { id: 'ktc', name: 'KTC กรุงไทย', keywords: ['ktc', 'กรุงไทย', 'krungthai', 'เป๋าตัง'], url: brandFavicon('ktc.co.th'), bg: '#F0F9FF' },
+            { id: 'krungsri', name: 'Krungsri กรุงศรี', keywords: ['krungsri', 'กรุงศรี', 'first choice', 'เฟิร์สช้อยส์', 'bay'], url: brandFavicon('krungsri.com'), bg: '#FFFBEB' },
+            { id: 'bbl', name: 'BBL กรุงเทพ', keywords: ['bbl', 'กรุงเทพ', 'bangkok bank', 'bualuang'], url: brandFavicon('bangkokbank.com'), bg: '#EFF6FF' },
+            { id: 'ttb', name: 'ttb ทหารไทยธนชาต', keywords: ['ttb', 'ทีทีบี', 'ttb touch'], url: brandFavicon('ttbbank.com'), bg: '#EFF6FF' },
+            { id: 'gsb', name: 'GSB ออมสิน', keywords: ['gsb', 'ออมสิน', 'mymo'], url: brandFavicon('gsb.or.th'), bg: '#FDF2F8' },
+            { id: 'uob', name: 'UOB', keywords: ['uob', 'ยูโอบี', 'tmrw'], url: brandFavicon('uob.co.th'), bg: '#EFF6FF' },
+            { id: 'cimb', name: 'CIMB Thai', keywords: ['cimb', 'ซีไอเอ็มบี', 'chill d'], url: brandFavicon('cimbthai.com'), bg: '#FEF2F2' },
+            { id: 'dime', name: 'Dime! / KKP', keywords: ['dime', 'ไดม์', 'kkp', 'เกียรตินาคิน'], url: brandFavicon('dime.co.th'), bg: '#ECFDF5' },
+            { id: 'kept', name: 'Kept', keywords: ['kept', 'เคปท์'], url: brandFavicon('keptbykrungsri.com'), bg: '#F0F9FF' },
+            { id: 'truemoney', name: 'TrueMoney', keywords: ['truemoney', 'ทรูมันนี่', 'wallet'], url: brandFavicon('truemoney.com'), bg: '#FFF7ED' },
+            { id: 'shopeepay', name: 'ShopeePay', keywords: ['shopeepay', 'ช้อปปี้เพย์'], url: brandFavicon('shopeepay.co.th'), bg: '#FFF7ED' },
+            { id: 'paypal', name: 'PayPal', keywords: ['paypal', 'เพย์พาล'], url: 'https://cdn.simpleicons.org/paypal/00457C', bg: '#EFF6FF' },
+            { id: 'wise', name: 'Wise', keywords: ['wise', 'transferwise'], url: 'https://cdn.simpleicons.org/wise/9FE870', bg: '#F7FEE7' },
+            { id: 'visa', name: 'Visa', keywords: ['visa', 'วีซ่า'], url: 'https://cdn.simpleicons.org/visa/1A1F71', bg: '#EFF6FF' },
+            { id: 'mastercard', name: 'Mastercard', keywords: ['mastercard', 'titanium', 'มาสเตอร์การ์ด'], url: 'https://cdn.simpleicons.org/mastercard/EB001B', bg: '#FEF2F2' },
+            { id: 'jcb', name: 'JCB', keywords: ['jcb', 'เจซีบี'], url: brandFavicon('global.jcb'), bg: '#EFF6FF' },
+            { id: 'amex', name: 'Amex', keywords: ['amex', 'american express'], url: 'https://cdn.simpleicons.org/americanexpress/2E77BC', bg: '#EFF6FF' }
         ];
+
+        const ALL_BRANDS_BY_ID = [...BRAND_CATALOG, ...BANK_LOGOS].reduce((acc, item) => {
+            acc[item.id] = item;
+            return acc;
+        }, {});
+
+        const ALL_BRAND_NAMES_SET = new Set([...BRAND_CATALOG, ...BANK_LOGOS].map(b => b.name));
+
+        function escapeHtmlAttr(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function resolveSmartLogoUrl(rawInput) {
+            const raw = String(rawInput || '').trim();
+            if (!raw) return { url: '', domain: '', mode: 'empty' };
+
+            // Extract embedded URL if user copied a share message containing a link
+            let candidate = raw;
+            if (/\s/.test(candidate)) {
+                const match = candidate.match(/https?:\/\/[^\s<>"{}|\\^`[\]]+/i);
+                if (match) {
+                    candidate = match[0];
+                } else {
+                    const domainMatch = candidate.match(/\b(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^\s]*)?/i);
+                    if (domainMatch) candidate = domainMatch[0];
+                }
+            }
+
+            if (/^data:image\//i.test(candidate)) {
+                return { url: candidate, domain: '', mode: 'direct' };
+            }
+
+            const hasScheme = /^https?:\/\//i.test(candidate);
+            const normalized = hasScheme ? candidate : `https://${candidate}`;
+
+            try {
+                const parsed = new URL(normalized);
+                const host = parsed.hostname.toLowerCase();
+                // Require at least one dot and valid domain characters
+                if (!host || !host.includes('.') || /[^a-z0-9.-]/.test(host) || host.startsWith('.') || host.endsWith('.')) {
+                    return { url: '', domain: '', mode: 'invalid' };
+                }
+                const cleanDomain = host.replace(/^www\./i, '');
+                const pathLower = parsed.pathname.toLowerCase();
+                const isDirectImage =
+                    /\.(png|jpe?g|webp|svg|ico|gif|avif)$/i.test(pathLower) ||
+                    host === 'cdn.simpleicons.org' ||
+                    host === 'ui-avatars.com' ||
+                    host === 'icons.duckduckgo.com' ||
+                    host === 'logo.clearbit.com' ||
+                    (host.endsWith('google.com') && pathLower.includes('/s2/favicons')) ||
+                    (host.endsWith('gstatic.com') && pathLower.includes('favicon'));
+
+                if (isDirectImage) {
+                    return { url: parsed.href, domain: cleanDomain, mode: 'direct' };
+                }
+
+                return {
+                    url: brandFavicon(cleanDomain),
+                    domain: cleanDomain,
+                    mode: 'website'
+                };
+            } catch {
+                return { url: '', domain: '', mode: 'invalid' };
+            }
+        }
+
+        function setLogoStatus(prefix, text = '', tone = 'success') {
+            const el = document.getElementById(`${prefix}-logo-status`);
+            if (!el) return;
+            if (!text) {
+                el.textContent = '';
+                el.classList.add('hidden');
+                return;
+            }
+            el.textContent = text;
+            el.classList.remove('hidden', 'text-emerald-600', 'text-amber-600', 'text-slate-500');
+            if (tone === 'warn') {
+                el.classList.add('text-amber-600');
+            } else if (tone === 'info') {
+                el.classList.add('text-slate-500');
+            } else {
+                el.classList.add('text-emerald-600');
+            }
+        }
 
         function findLogoByText(text, isBank = false) {
             if (!text) return null;
@@ -1815,14 +2100,15 @@
         }
 
         function renderLogoAvatar(logoUrl, title, fallbackIcon = 'fa-receipt', fallbackBg = '#F1F5F9', fallbackColor = '#475569', sizeClass = 'w-11 h-11 rounded-2xl') {
-            const matched = !logoUrl ? findLogoByText(title) : null;
-            const finalUrl = logoUrl || (matched ? matched.url : null);
+            const resolvedInput = logoUrl ? resolveSmartLogoUrl(logoUrl).url : '';
+            const matched = !resolvedInput ? findLogoByText(title) : null;
+            const finalUrl = resolvedInput || (matched ? matched.url : null);
             const bgStyle = matched && matched.bg ? `background-color: ${matched.bg};` : `background-color: ${fallbackBg}; color: ${fallbackColor};`;
 
             if (finalUrl) {
                 return `
-                    <div class="${sizeClass} brand-logo-box p-2 border border-slate-200/70 shadow-2xs" style="${bgStyle}">
-                        <img src="${finalUrl}" alt="${title}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${fallbackIcon} text-sm\\'></i>'">
+                    <div class="${sizeClass} brand-logo-box p-1.5 border border-slate-200/70 shadow-2xs" style="${bgStyle}">
+                        <img src="${escapeHtmlAttr(finalUrl)}" alt="${escapeHtmlAttr(title)}" loading="lazy" class="rounded-lg" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${fallbackIcon} text-sm\\'></i>'">
                     </div>
                 `;
             }
@@ -1833,48 +2119,139 @@
             `;
         }
 
+        const BRAND_STRIP_PREFIXES = ['rec', 'tx', 'inst', 'inv', 'acc'];
+
+        function updateBrandScrollControls(prefix) {
+            const track = document.getElementById(`${prefix}-brand-presets`);
+            const prevBtn = document.getElementById(`${prefix}-brand-prev`);
+            const nextBtn = document.getElementById(`${prefix}-brand-next`);
+            if (!track || !prevBtn || !nextBtn) return;
+
+            const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+            const atStart = track.scrollLeft <= 2;
+            const atEnd = maxScroll <= 2 || track.scrollLeft >= maxScroll - 2;
+
+            const prevHadFocus = document.activeElement === prevBtn;
+            const nextHadFocus = document.activeElement === nextBtn;
+
+            prevBtn.disabled = atStart;
+            nextBtn.disabled = atEnd;
+
+            // Redirect focus if the active arrow button becomes disabled at an end
+            if (prevHadFocus && prevBtn.disabled && !nextBtn.disabled) {
+                nextBtn.focus();
+            } else if (nextHadFocus && nextBtn.disabled && !prevBtn.disabled) {
+                prevBtn.focus();
+            }
+        }
+
+        function updateAllBrandScrollControls() {
+            BRAND_STRIP_PREFIXES.forEach(updateBrandScrollControls);
+        }
+
+        function scrollBrandPresets(prefix, direction) {
+            const track = document.getElementById(`${prefix}-brand-presets`);
+            if (!track) return;
+            const step = Math.max(180, Math.round(track.clientWidth * 0.75));
+            const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            track.scrollBy({
+                left: direction * step,
+                behavior: prefersReduced ? 'auto' : 'smooth'
+            });
+            setTimeout(() => updateBrandScrollControls(prefix), prefersReduced ? 20 : 280);
+        }
+
+        function bindBrandStripInteractions(prefix) {
+            const track = document.getElementById(`${prefix}-brand-presets`);
+            if (!track || track.dataset.scrollBound === '1') return;
+            track.dataset.scrollBound = '1';
+
+            let rafPending = false;
+            track.addEventListener('scroll', () => {
+                if (rafPending) return;
+                rafPending = true;
+                requestAnimationFrame(() => {
+                    rafPending = false;
+                    updateBrandScrollControls(prefix);
+                });
+            }, { passive: true });
+
+            if ('onscrollend' in window) {
+                track.addEventListener('scrollend', () => updateBrandScrollControls(prefix), { passive: true });
+            }
+
+            // Allow smooth vertical mouse-wheel to scroll brand strip horizontally on PC
+            track.addEventListener('wheel', (e) => {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && track.scrollWidth > track.clientWidth) {
+                    e.preventDefault();
+                    track.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
+
+        window.addEventListener('resize', () => requestAnimationFrame(updateAllBrandScrollControls), { passive: true });
+
         function renderBrandPresetStrips() {
             ['rec', 'tx', 'inst', 'inv'].forEach(prefix => {
                 const container = document.getElementById(`${prefix}-brand-presets`);
                 if (!container) return;
                 const list = prefix === 'inv' ? [...BANK_LOGOS, ...BRAND_CATALOG] : BRAND_CATALOG;
                 container.innerHTML = list.map(b => `
-                    <button type="button" onclick="selectPresetBrand('${prefix}', '${b.url}', '${b.name}')" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-slate-200/80 hover:border-violet-400 active:bg-violet-50 bg-white transition" title="${b.name}">
-                        <img src="${b.url}" class="w-4 h-4 object-contain" alt="${b.name}">
-                        <span class="text-[11px] font-bold text-slate-700">${b.name}</span>
+                    <button type="button" onclick="selectPresetBrandById('${prefix}', '${b.id}')" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-slate-200/80 hover:border-indigo-400 active:bg-indigo-50 bg-white transition" title="${escapeHtmlAttr(b.name)}">
+                        <img src="${escapeHtmlAttr(b.url)}" loading="lazy" class="w-4 h-4 object-contain rounded-xs" alt="${escapeHtmlAttr(b.name)}">
+                        <span class="text-[11px] font-bold text-slate-700">${escapeHtmlAttr(b.name)}</span>
                     </button>
                 `).join('');
+                bindBrandStripInteractions(prefix);
             });
 
             const accContainer = document.getElementById('acc-brand-presets');
             if (accContainer) {
                 accContainer.innerHTML = BANK_LOGOS.map(b => `
-                    <button type="button" onclick="selectPresetBrand('acc', '${b.url}', '${b.name}')" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-slate-200/80 hover:border-slate-800 active:bg-slate-100 bg-white transition">
-                        <img src="${b.url}" class="w-4 h-4 object-contain" alt="${b.name}">
-                        <span class="text-[11px] font-bold text-slate-700">${b.name}</span>
+                    <button type="button" onclick="selectPresetBrandById('acc', '${b.id}')" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-slate-200/80 hover:border-slate-800 active:bg-slate-100 bg-white transition" title="${escapeHtmlAttr(b.name)}">
+                        <img src="${escapeHtmlAttr(b.url)}" loading="lazy" class="w-4 h-4 object-contain rounded-xs" alt="${escapeHtmlAttr(b.name)}">
+                        <span class="text-[11px] font-bold text-slate-700">${escapeHtmlAttr(b.name)}</span>
                     </button>
                 `).join('');
+                bindBrandStripInteractions('acc');
             }
+
+            requestAnimationFrame(updateAllBrandScrollControls);
         }
 
-        function selectPresetBrand(prefix, url, brandName) {
+        function selectPresetBrandById(prefix, brandId) {
+            const brand = ALL_BRANDS_BY_ID[brandId];
+            if (!brand) return;
+            selectPresetBrand(prefix, brand.url, brand.name, brand.bg || '#F8FAFC');
+        }
+
+        function selectPresetBrand(prefix, url, brandName, bg = '#F8FAFC') {
             const urlInput = document.getElementById(`${prefix}-logo-url`);
-            if (urlInput) urlInput.value = url;
+            if (urlInput) {
+                urlInput.value = url;
+                urlInput.dataset.manual = '1';
+            }
             const titleEl = document.getElementById(prefix === 'acc' ? 'acc-name' : `${prefix}-title`);
             if (titleEl) {
-                titleEl.value = brandName;
+                const current = titleEl.value.trim();
+                if (!current || ALL_BRAND_NAMES_SET.has(current)) {
+                    titleEl.value = brandName;
+                }
             }
-            updateBrandPreviewBox(prefix, url);
+            updateBrandPreviewBox(prefix, url, bg, true);
+            setLogoStatus(prefix, `✓ เลือกไอคอน ${brandName} แล้ว`, 'success');
         }
 
         function handleBrandAutoDetect(prefix) {
             const titleEl = document.getElementById(prefix === 'acc' ? 'acc-name' : `${prefix}-title`);
             const urlInput = document.getElementById(`${prefix}-logo-url`);
             if (!titleEl || !urlInput) return;
+            if (urlInput.dataset.manual === '1' && urlInput.value.trim()) return;
             const matched = findLogoByText(titleEl.value, prefix === 'acc' || prefix === 'inv');
             if (matched) {
                 urlInput.value = matched.url;
-                updateBrandPreviewBox(prefix, matched.url, matched.bg);
+                updateBrandPreviewBox(prefix, matched.url, matched.bg, true);
+                setLogoStatus(prefix, `✓ ตรวจพบแบรนด์ ${matched.name} อัตโนมัติ`, 'info');
             } else {
                 urlInput.value = '';
                 updateBrandPreviewBox(prefix, '');
@@ -1883,15 +2260,61 @@
 
         function updateBrandPreviewFromInput(prefix) {
             const urlInput = document.getElementById(`${prefix}-logo-url`);
-            if (urlInput) updateBrandPreviewBox(prefix, urlInput.value.trim());
+            if (!urlInput) return;
+            const raw = urlInput.value.trim();
+            if (!raw) {
+                urlInput.dataset.manual = '';
+                updateBrandPreviewBox(prefix, '');
+                return;
+            }
+            urlInput.dataset.manual = '1';
+            const resolved = resolveSmartLogoUrl(raw);
+            if (resolved.mode === 'website') {
+                updateBrandPreviewBox(prefix, resolved.url, '#FFFFFF', true);
+                setLogoStatus(prefix, `✓ ดึงไอคอนจาก ${resolved.domain} อัตโนมัติแล้ว`, 'success');
+            } else if (resolved.mode === 'direct') {
+                updateBrandPreviewBox(prefix, resolved.url, '#FFFFFF', true);
+                setLogoStatus(prefix, '✓ โหลดรูปไอคอนจากลิงก์แล้ว', 'success');
+            } else {
+                updateBrandPreviewBox(prefix, '', '#F1F5F9', true);
+                setLogoStatus(prefix, 'กรุณาวางลิงก์เว็บที่มีโดเมน (เช่น shopee.co.th) หรือ URL รูปภาพ', 'warn');
+            }
         }
 
-        function updateBrandPreviewBox(prefix, url, bg = '#F8FAFC') {
+        async function pasteLogoUrl(prefix) {
+            const urlInput = document.getElementById(`${prefix}-logo-url`);
+            if (!urlInput) return;
+            try {
+                if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
+                    throw new Error('Clipboard API unavailable');
+                }
+                const text = (await navigator.clipboard.readText()).trim();
+                if (!text) {
+                    setLogoStatus(prefix, 'คลิปบอร์ดว่างเปล่า — คัดลอก URL เว็บไซต์แล้วกดวางอีกครั้ง', 'warn');
+                    urlInput.focus();
+                    return;
+                }
+                urlInput.value = text;
+                updateBrandPreviewFromInput(prefix);
+            } catch {
+                urlInput.focus();
+                urlInput.select();
+                setLogoStatus(prefix, 'แตะค้างหรือกด Ctrl+V ในช่อง URL เพื่อวางลิงก์ได้เลย', 'info');
+            }
+        }
+
+        function updateBrandPreviewBox(prefix, url, bg = '#F8FAFC', preserveStatus = false) {
             const box = document.getElementById(`${prefix}-brand-preview`);
+            const urlInput = document.getElementById(`${prefix}-logo-url`);
+            if (!preserveStatus) {
+                setLogoStatus(prefix, '');
+                if (urlInput) urlInput.dataset.manual = url ? '1' : '';
+            }
             if (!box) return;
-            if (url) {
+            const resolvedUrl = url ? resolveSmartLogoUrl(url).url : '';
+            if (resolvedUrl) {
                 box.style.backgroundColor = bg;
-                box.innerHTML = `<img src="${url}" class="w-7 h-7 object-contain" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image text-slate-400\\'></i>'">`;
+                box.innerHTML = `<img src="${escapeHtmlAttr(resolvedUrl)}" class="w-7 h-7 object-contain rounded-md" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image text-slate-400\\'></i>'">`;
             } else {
                 box.style.backgroundColor = '#F1F5F9';
                 const defaultIcon = prefix === 'acc' ? 'fa-credit-card' : (prefix === 'inv' ? 'fa-piggy-bank' : 'fa-receipt');
@@ -1901,7 +2324,10 @@
 
         function toggleCustomLogoInput(prefix) {
             const input = document.getElementById(`${prefix}-logo-url`);
-            if (input) input.classList.toggle('hidden');
+            if (input) {
+                input.classList.remove('hidden');
+                input.focus();
+            }
         }
 
         // ==========================================
@@ -3002,8 +3428,9 @@
             const editId = document.getElementById('rec-edit-id').value;
             const title = document.getElementById('rec-title').value.trim();
             const logoInput = document.getElementById('rec-logo-url').value.trim();
-            const matched = !logoInput ? findLogoByText(title) : null;
-            const finalLogo = logoInput || (matched ? matched.url : '');
+            const resolvedLogo = resolveSmartLogoUrl(logoInput).url;
+            const matched = !resolvedLogo ? findLogoByText(title) : null;
+            const finalLogo = resolvedLogo || (matched ? matched.url : '');
 
             const splitCount = Math.max(1, Number(document.getElementById('rec-split-count').value) || 1);
             const rawNames = document.getElementById('rec-split-names').value;
@@ -3056,8 +3483,27 @@
         }
 
         // ==========================================
-        // 6.3 INSTALLMENTS TAB (SYMMETRIC 5-COL PERIOD GRID)
+        // 6.3 INSTALLMENTS TAB (SYMMETRIC PERIOD MATRIX)
         // ==========================================
+        function getSymmetricPeriodGridClass(totalMonths) {
+            const n = Math.max(1, Number(totalMonths) || 1);
+            if (n <= 2) return 'grid-cols-2';
+            if (n === 3) return 'grid-cols-3';
+            if (n === 4) return 'grid-cols-4';
+            if (n === 5) return 'grid-cols-5';
+            if (n === 6) return 'grid-cols-3 sm:grid-cols-6';
+            if (n === 8) return 'grid-cols-4';
+            if (n === 9) return 'grid-cols-3';
+            if (n === 10) return 'grid-cols-5';
+            if (n === 15) return 'grid-cols-3 sm:grid-cols-5';
+            if (n === 20) return 'grid-cols-4 sm:grid-cols-5';
+            if (n % 6 === 0) return 'grid-cols-4 sm:grid-cols-6';
+            if (n % 5 === 0) return 'grid-cols-5';
+            if (n % 4 === 0) return 'grid-cols-4';
+            if (n % 3 === 0) return 'grid-cols-3 sm:grid-cols-6';
+            return 'grid-cols-4 sm:grid-cols-5';
+        }
+
         function renderInstallmentsTab() {
             const grid = document.getElementById('installments-full-grid');
             if (!grid) return;
@@ -3084,9 +3530,9 @@
 
             if (appData.installments.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full bento-card rounded-3xl py-14 px-6 text-center">
-                        <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-500 flex items-center justify-center mx-auto mb-3">
-                            <i class="fa-solid fa-layer-group text-lg"></i>
+                    <div class="col-span-full fin-card rounded-2xl py-14 px-6 text-center">
+                        <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-layer-group text-lg" aria-hidden="true"></i>
                         </div>
                         <p class="text-sm font-bold text-slate-600">ยังไม่มีรายการผ่อนชำระ</p>
                         <p class="text-xs text-slate-400 mt-1">กด "+ เพิ่มรายการผ่อน" เพื่อเริ่มติดตามงวดผ่อนชำระ</p>
@@ -3098,97 +3544,119 @@
             grid.innerHTML = appData.installments.map(inst => {
                 const d = getInstallmentDetails(inst, selectedMonth);
                 const acc = getAccountById(inst.accountId);
+                const gridColsClass = getSymmetricPeriodGridClass(inst.months);
+                const isFullyPaid = d.paidCount >= inst.months;
 
                 const periodPillsHtml = d.schedule.map(slot => {
-                    const activeBorder = slot.isCurrentSelectedMonth ? 'ring-2 ring-violet-500 ring-offset-1' : '';
+                    const currentRing = slot.isCurrentSelectedMonth ? 'ring-2 ring-indigo-600 ring-offset-1 z-10' : '';
                     if (slot.isPaid) {
                         return `
-                            <button onclick="togglePayInstallmentMonth('${inst.id}', '${slot.ym}')" class="h-12 w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition flex flex-col items-center justify-center shadow-2xs ${activeBorder}" title="งวดที่ ${slot.periodNumber} (${slot.label}) - คลิกเพื่อยกเลิก">
-                                <span class="text-[11px] font-extrabold leading-tight">✓ งวด ${slot.periodNumber}</span>
-                                <span class="text-[9px] opacity-90 font-medium leading-tight mt-0.5">${slot.label}</span>
+                            <button type="button" onclick="togglePayInstallmentMonth('${inst.id}', '${slot.ym}')" class="relative h-[52px] w-full rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-800 border border-emerald-300/90 transition flex flex-col items-center justify-center px-1 ${currentRing}" title="งวดที่ ${slot.periodNumber} (${slot.label}) — จ่ายแล้ว (คลิกเพื่อยกเลิก)">
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold font-mono leading-none">
+                                    <i class="fa-solid fa-circle-check text-[10px] text-emerald-600" aria-hidden="true"></i>${slot.periodNumber}
+                                </span>
+                                <span class="text-[10px] text-emerald-700/80 font-medium leading-none mt-1 truncate max-w-full">${slot.label}</span>
+                            </button>
+                        `;
+                    }
+                    if (slot.isCurrentSelectedMonth) {
+                        return `
+                            <button type="button" onclick="togglePayInstallmentMonth('${inst.id}', '${slot.ym}')" class="relative h-[52px] w-full rounded-lg bg-indigo-50/90 hover:bg-indigo-100/80 text-indigo-800 border border-indigo-300 transition flex flex-col items-center justify-center px-1 ${currentRing}" title="งวดเดือนนี้ — งวดที่ ${slot.periodNumber} (${slot.label}) คลิกเพื่อติ๊กจ่าย">
+                                <span class="text-[11px] font-extrabold font-mono leading-none">งวด ${slot.periodNumber}</span>
+                                <span class="text-[10px] text-indigo-600 font-semibold leading-none mt-1 truncate max-w-full">${slot.label}</span>
                             </button>
                         `;
                     }
                     return `
-                        <button onclick="togglePayInstallmentMonth('${inst.id}', '${slot.ym}')" class="h-12 w-full rounded-xl bg-white hover:bg-violet-50 text-slate-700 hover:text-violet-700 border border-slate-200/90 transition flex flex-col items-center justify-center ${activeBorder}" title="คลิกเพื่อติ๊กว่าจ่ายงวดที่ ${slot.periodNumber} (${slot.label}) แล้ว">
-                            <span class="text-[11px] font-bold leading-tight">งวด ${slot.periodNumber}</span>
-                            <span class="text-[9px] text-slate-400 font-medium leading-tight mt-0.5">${slot.label}</span>
+                        <button type="button" onclick="togglePayInstallmentMonth('${inst.id}', '${slot.ym}')" class="relative h-[52px] w-full rounded-lg bg-white hover:bg-slate-50 text-slate-700 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 transition flex flex-col items-center justify-center px-1" title="คลิกเพื่อติ๊กว่าจ่ายงวดที่ ${slot.periodNumber} (${slot.label}) แล้ว">
+                            <span class="text-[11px] font-bold font-mono leading-none">${slot.periodNumber}</span>
+                            <span class="text-[10px] text-slate-400 font-medium leading-none mt-1 truncate max-w-full">${slot.label}</span>
                         </button>
                     `;
                 }).join('');
 
                 return `
-                    <div class="bento-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
+                    <div class="fin-card rounded-2xl p-5 flex flex-col justify-between">
                         <div>
+                            <!-- Card Header -->
                             <div class="flex items-start justify-between gap-3 mb-4">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    ${renderLogoAvatar(inst.logoUrl, inst.title, 'fa-layer-group', '#F5F3FF', '#7C3AED')}
+                                    ${renderLogoAvatar(inst.logoUrl, inst.title, 'fa-layer-group', '#EEF2FF', '#4F46E5', 'w-10 h-10 rounded-xl')}
                                     <div class="min-w-0">
-                                        <h4 class="font-extrabold text-slate-900 text-base truncate">${inst.title}</h4>
-                                        <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                            <span class="text-[11px] font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">${acc.name} •••• ${acc.last4}</span>
-                                            <span class="text-[10px] font-bold text-slate-400">เริ่ม ${formatShortMonthThai(inst.startMonth)}</span>
+                                        <h4 class="font-bold text-slate-900 text-sm sm:text-[15px] truncate">${inst.title}</h4>
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                            <span class="text-[11px] font-mono font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">${acc.name} •••• ${acc.last4}</span>
+                                            <span class="text-[11px] font-medium text-slate-400">เริ่ม ${formatShortMonthThai(inst.startMonth)}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 shrink-0">
-                                    <button onclick="editInstallment('${inst.id}')" class="w-8 h-8 rounded-full hover:bg-violet-100 text-slate-400 hover:text-violet-700 flex items-center justify-center transition" title="แก้ไขรายละเอียด / ตั้งงวดย้อนหลัง">
-                                        <i class="fa-solid fa-pen text-xs"></i>
+                                    <button type="button" onclick="editInstallment('${inst.id}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition" title="แก้ไขรายละเอียด / ตั้งงวดย้อนหลัง" aria-label="แก้ไข ${inst.title}">
+                                        <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i>
                                     </button>
-                                    <button onclick="deleteInstallment('${inst.id}')" class="w-8 h-8 rounded-full hover:bg-rose-50 text-slate-300 hover:text-rose-500 flex items-center justify-center transition" title="ลบรายการผ่อน">
-                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                    <button type="button" onclick="deleteInstallment('${inst.id}')" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-slate-300 hover:text-rose-500 flex items-center justify-center transition" title="ลบรายการผ่อน" aria-label="ลบ ${inst.title}">
+                                        <i class="fa-regular fa-trash-can text-xs" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 mb-4 text-center">
-                                <div class="px-1">
-                                    <p class="text-[10px] font-bold text-slate-400">ยอดเต็ม</p>
-                                    <p class="text-xs sm:text-sm font-extrabold font-mono text-slate-800 mt-0.5 truncate">฿${formatCurrency(d.grandTotal)}</p>
+                            <!-- Unified 3-Col Hairline Metric Strip -->
+                            <div class="grid grid-cols-3 bg-slate-200 gap-px rounded-xl overflow-hidden border border-slate-200 mb-4 text-center">
+                                <div class="bg-slate-50/70 py-2.5 px-2">
+                                    <p class="text-[10px] font-semibold text-slate-400">ยอดเต็ม</p>
+                                    <p class="text-xs sm:text-[13px] font-extrabold font-mono text-slate-800 mt-0.5 truncate">฿${formatCurrency(d.grandTotal)}</p>
                                 </div>
-                                <div class="border-x border-slate-200/60 px-1">
-                                    <p class="text-[10px] font-bold text-violet-600">ผ่อน/เดือน</p>
-                                    <p class="text-xs sm:text-sm font-extrabold font-mono text-violet-700 mt-0.5 truncate">฿${formatCurrency(d.monthlyPay)}</p>
+                                <div class="bg-white py-2.5 px-2">
+                                    <p class="text-[10px] font-semibold text-indigo-600">ผ่อน/เดือน</p>
+                                    <p class="text-xs sm:text-[13px] font-extrabold font-mono text-indigo-700 mt-0.5 truncate">฿${formatCurrency(d.monthlyPay)}</p>
                                 </div>
-                                <div class="px-1">
-                                    <p class="text-[10px] font-bold text-slate-400">คงเหลือ</p>
-                                    <p class="text-xs sm:text-sm font-extrabold font-mono text-rose-600 mt-0.5 truncate">฿${formatCurrency(d.remainingAmount)}</p>
+                                <div class="bg-slate-50/70 py-2.5 px-2">
+                                    <p class="text-[10px] font-semibold text-slate-400">คงเหลือ</p>
+                                    <p class="text-xs sm:text-[13px] font-extrabold font-mono ${d.remainingAmount > 0 ? 'text-rose-600' : 'text-emerald-600'} mt-0.5 truncate">฿${formatCurrency(d.remainingAmount)}</p>
                                 </div>
                             </div>
 
+                            <!-- Progress Row & Quick Stepper -->
                             <div class="mb-4">
-                                <div class="flex items-center justify-between text-xs font-bold mb-2">
-                                    <span class="text-slate-600">ผ่อนแล้ว <strong class="text-violet-700 font-mono">${d.paidCount}/${inst.months}</strong> งวด (฿${formatCurrency(d.paidAmount)})</span>
-                                    <div class="flex items-center gap-1.5">
-                                        <button onclick="setInstallmentPaidCount('${inst.id}', ${d.paidCount - 1})" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center justify-center transition" title="ลดจำนวนงวดที่จ่ายแล้ว">-</button>
-                                        <span class="text-[11px] font-mono font-bold min-w-[34px] text-center text-violet-700">${d.progressPercent}%</span>
-                                        <button onclick="setInstallmentPaidCount('${inst.id}', ${d.paidCount + 1})" class="w-6 h-6 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-700 font-extrabold text-xs flex items-center justify-center transition" title="เพิ่มจำนวนงวดที่จ่ายแล้ว">+</button>
+                                <div class="flex items-center justify-between gap-2 text-xs mb-2">
+                                    <span class="font-semibold text-slate-600">ผ่อนแล้ว <strong class="text-slate-900 font-mono">${d.paidCount}/${inst.months}</strong> งวด <span class="text-slate-400 font-mono">(฿${formatCurrency(d.paidAmount)})</span></span>
+                                    <div class="inline-flex items-center gap-1 bg-slate-100 rounded-lg p-0.5 shrink-0">
+                                        <button type="button" onclick="setInstallmentPaidCount('${inst.id}', ${d.paidCount - 1})" class="w-6 h-6 rounded-md bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-2xs flex items-center justify-center transition" title="ลดจำนวนงวดที่จ่ายแล้ว" aria-label="ลดจำนวนงวดที่จ่ายแล้ว">-</button>
+                                        <span class="text-[11px] font-mono font-bold min-w-[36px] text-center ${isFullyPaid ? 'text-emerald-600' : 'text-indigo-700'}">${d.progressPercent}%</span>
+                                        <button type="button" onclick="setInstallmentPaidCount('${inst.id}', ${d.paidCount + 1})" class="w-6 h-6 rounded-md bg-white hover:bg-indigo-50 text-indigo-700 font-bold text-xs shadow-2xs flex items-center justify-center transition" title="เพิ่มจำนวนงวดที่จ่ายแล้ว" aria-label="เพิ่มจำนวนงวดที่จ่ายแล้ว">+</button>
                                     </div>
                                 </div>
-                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                                    <div class="bg-gradient-to-r from-violet-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width:${d.progressPercent}%"></div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div class="${isFullyPaid ? 'bg-emerald-500' : 'bg-indigo-600'} h-full rounded-full transition-all duration-500" style="width:${d.progressPercent}%"></div>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/70 mb-4">
-                                <div class="flex items-center justify-between mb-2.5">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">ตารางงวดผ่อนชำระ (คลิกเลือกงวดได้)</span>
-                                    <span class="text-[10px] font-bold text-emerald-600">สีเขียว = จ่ายแล้ว</span>
+                            <!-- Symmetric Period Matrix -->
+                            <div class="bg-slate-50/80 rounded-xl p-3 border border-slate-200/80 mb-4">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                                    <span class="text-[11px] font-bold text-slate-500">ตารางงวดผ่อนชำระ (${inst.months} งวด)</span>
+                                    <div class="flex items-center gap-2.5 text-[10px] font-semibold text-slate-500">
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>จ่ายแล้ว</span>
+                                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-600"></span>เดือนนี้</span>
+                                    </div>
                                 </div>
-                                <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-44 overflow-y-auto custom-scrollbar p-0.5">
+                                <div class="grid ${gridColsClass} gap-1.5 max-h-48 overflow-y-auto custom-scrollbar p-1">
                                     ${periodPillsHtml}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                            <span class="text-xs font-bold text-slate-500">${d.isActiveThisMonth ? `เดือนนี้ตรงกับงวดที่ ${d.currentPeriodNumber}/${inst.months}` : `ชำระแล้ว ${d.paidCount} จาก ${inst.months} งวด`}</span>
+                        <!-- Card Footer -->
+                        <div class="pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <span class="text-xs font-semibold text-slate-500">
+                                ${isFullyPaid ? '<span class="text-emerald-600 font-bold">✓ ผ่อนครบทุกงวดแล้ว</span>' : (d.isActiveThisMonth ? `เดือนนี้ตรงกับงวดที่ <strong class="text-slate-900 font-mono">${d.currentPeriodNumber}/${inst.months}</strong>` : `ชำระแล้ว ${d.paidCount} จาก ${inst.months} งวด`)}
+                            </span>
                             ${d.isActiveThisMonth ? `
-                                <button onclick="togglePayInstallmentMonth('${inst.id}', '${selectedMonth}')" class="px-4 py-2 rounded-full text-xs font-bold transition ${d.isPaidThisMonth ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-600 hover:bg-violet-700 text-white shadow-xs'}">
+                                <button type="button" onclick="togglePayInstallmentMonth('${inst.id}', '${selectedMonth}')" class="px-3.5 py-2 rounded-xl text-xs font-bold transition ${d.isPaidThisMonth ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'}">
                                     ${d.isPaidThisMonth ? '✓ จ่ายงวดเดือนนี้แล้ว' : 'ติ๊กจ่ายงวดเดือนนี้'}
                                 </button>
                             ` : `
-                                <button onclick="editInstallment('${inst.id}')" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                                <button type="button" onclick="editInstallment('${inst.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
                                     ตั้งค่างวด
                                 </button>
                             `}
@@ -3322,8 +3790,9 @@
             const desiredPaidCount = Math.min(months, Math.max(0, Number(document.getElementById('inst-already-paid').value) || 0));
 
             const logoInput = document.getElementById('inst-logo-url').value.trim();
-            const matched = !logoInput ? findLogoByText(title) : null;
-            const finalLogo = logoInput || (matched ? matched.url : '');
+            const resolvedLogo = resolveSmartLogoUrl(logoInput).url;
+            const matched = !resolvedLogo ? findLogoByText(title) : null;
+            const finalLogo = resolvedLogo || (matched ? matched.url : '');
 
             const generatedPaidMonths = [];
             for (let i = 0; i < desiredPaidCount; i++) {
@@ -3542,8 +4011,9 @@
             const editId = document.getElementById('inv-edit-id').value;
             const title = document.getElementById('inv-title').value.trim();
             const logoInput = document.getElementById('inv-logo-url').value.trim();
-            const matched = !logoInput ? findLogoByText(title, true) : null;
-            const finalLogo = logoInput || (matched ? matched.url : '');
+            const resolvedLogo = resolveSmartLogoUrl(logoInput).url;
+            const matched = !resolvedLogo ? findLogoByText(title, true) : null;
+            const finalLogo = resolvedLogo || (matched ? matched.url : '');
 
             if (editId) {
                 const idx = appData.investments.findIndex(i => i.id === editId);
@@ -3725,8 +4195,9 @@
             const editId = document.getElementById('tx-edit-id').value;
             const title = document.getElementById('tx-title').value.trim();
             const logoInput = document.getElementById('tx-logo-url').value.trim();
-            const matched = !logoInput ? findLogoByText(title) : null;
-            const finalLogo = logoInput || (matched ? matched.url : '');
+            const resolvedLogo = resolveSmartLogoUrl(logoInput).url;
+            const matched = !resolvedLogo ? findLogoByText(title) : null;
+            const finalLogo = resolvedLogo || (matched ? matched.url : '');
 
             const payload = {
                 type: document.getElementById('tx-type').value,
@@ -3854,9 +4325,10 @@
             const editId = document.getElementById('acc-edit-id').value;
             const name = document.getElementById('acc-name').value.trim();
             const logoInput = document.getElementById('acc-logo-url').value.trim();
-            const matched = !logoInput ? findLogoByText(name, true) : null;
+            const resolvedLogo = resolveSmartLogoUrl(logoInput).url;
+            const matched = !resolvedLogo ? findLogoByText(name, true) : null;
             const colorEl = document.querySelector('input[name="acc-color"]:checked');
-            const finalLogo = logoInput || (matched ? matched.url : '');
+            const finalLogo = resolvedLogo || (matched ? matched.url : '');
 
             const payload = {
                 name,
